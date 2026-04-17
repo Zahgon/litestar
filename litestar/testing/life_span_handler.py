@@ -55,41 +55,10 @@ class LifeSpanHandler:
         return cast("LifeSpanSendMessage", message)
 
     async def wait_startup(self) -> None:
-        event: LifeSpanStartupEvent = {"type": "lifespan.startup"}
-        await self.stream_receive.send(event)
-
-        message = await self.receive()
-        if message["type"] not in (
-            "lifespan.startup.complete",
-            "lifespan.startup.failed",
-        ):
-            raise RuntimeError(
-                "Received unexpected ASGI message type. Expected 'lifespan.startup.complete' or "
-                f"'lifespan.startup.failed'. Got {message['type']!r}",
-            )
-        if message["type"] == "lifespan.startup.failed":
-            await self.receive()
+        pass
 
     async def wait_shutdown(self) -> None:
-        lifespan_shutdown_event: LifeSpanShutdownEvent = {"type": "lifespan.shutdown"}
-        await self.stream_receive.send(lifespan_shutdown_event)
-
-        message = await self.receive()
-        if message["type"] not in (
-            "lifespan.shutdown.complete",
-            "lifespan.shutdown.failed",
-        ):
-            raise RuntimeError(
-                "Received unexpected ASGI message type. Expected 'lifespan.shutdown.complete' or "
-                f"'lifespan.shutdown.failed'. Got {message['type']!r}",
-            )
-        if message["type"] == "lifespan.shutdown.failed":
-            await self.receive()
+        pass
 
     async def lifespan(self, cs: anyio.CancelScope) -> None:
-        scope = {"type": "lifespan"}
-        try:
-            await self.app(scope, self.stream_receive.receive, self.stream_send.send)  # type: ignore[arg-type]
-        except BaseException:
-            cs.cancel()
-            raise
+        pass

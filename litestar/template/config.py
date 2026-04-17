@@ -45,15 +45,9 @@ class TemplateConfig(Generic[EngineType]):
 
     def to_engine(self) -> EngineType:
         """Instantiate the template engine."""
-        template_engine = cast(
-            "EngineType",
-            self.engine(directory=self.directory, engine_instance=None) if isclass(self.engine) else self.engine,  # pyright: ignore[reportArgumentType]
-        )
-        if callable(self.engine_callback):
-            self.engine_callback(template_engine)
-        return template_engine
+        pass
 
     @cached_property
     def engine_instance(self) -> EngineType:
         """Return the template engine instance."""
-        return self.to_engine() if self.instance is None else self.instance
+        pass

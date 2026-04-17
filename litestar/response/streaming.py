@@ -84,14 +84,7 @@ class ASGIStreamingResponse(ASGIResponse):
         Returns:
             None
         """
-        if not cancel_scope.cancel_called:
-            message = await receive()
-            if message["type"] == "http.disconnect":
-                # despite the IDE warning, this is not a coroutine because anyio 3+ changed this.
-                # therefore make sure not to await this.
-                cancel_scope.cancel()
-            else:
-                await self._listen_for_disconnect(cancel_scope=cancel_scope, receive=receive)
+        pass
 
     async def _stream(self, send: Send) -> None:
         """Send the chunks from the iterator as a stream of ASGI 'http.response.body' events.
@@ -102,15 +95,7 @@ class ASGIStreamingResponse(ASGIResponse):
         Returns:
             None
         """
-        async for chunk in self.iterator:
-            stream_event: HTTPResponseBodyEvent = {
-                "type": "http.response.body",
-                "body": chunk if isinstance(chunk, bytes) else chunk.encode(self.encoding),
-                "more_body": True,
-            }
-            await send(stream_event)
-        terminus_event: HTTPResponseBodyEvent = {"type": "http.response.body", "body": b"", "more_body": False}
-        await send(terminus_event)
+        pass
 
     async def send_body(self, send: Send, receive: Receive) -> None:
         """Emit a stream of events correlating with the response body.
@@ -122,10 +107,7 @@ class ASGIStreamingResponse(ASGIResponse):
         Returns:
             None
         """
-
-        async with create_task_group() as task_group:
-            task_group.start_soon(partial(self._stream, send))
-            await self._listen_for_disconnect(cancel_scope=task_group.cancel_scope, receive=receive)
+        pass
 
 
 class Stream(Response[StreamType[Union[str, bytes]]]):

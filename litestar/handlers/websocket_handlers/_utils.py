@@ -25,28 +25,22 @@ def create_handle_receive(listener: WebsocketListenerRouteHandler) -> Callable[[
     if data_dto := listener.data_dto:
 
         async def handle_receive(socket: WebSocket) -> Any:
-            received_data = await socket.receive_data(mode=listener._receive_mode)
-            return data_dto(socket).decode_bytes(
-                received_data.encode("utf-8") if isinstance(received_data, str) else received_data
-            )
+            pass
 
     elif listener.parsed_data_field and listener.parsed_data_field.annotation is str:
 
         async def handle_receive(socket: WebSocket) -> Any:
-            received_data = await socket.receive_data(mode=listener._receive_mode)
-            return received_data.decode("utf-8") if isinstance(received_data, bytes) else received_data
+            pass
 
     elif listener.parsed_data_field and listener.parsed_data_field.annotation is bytes:
 
         async def handle_receive(socket: WebSocket) -> Any:
-            received_data = await socket.receive_data(mode=listener._receive_mode)
-            return received_data.encode("utf-8") if isinstance(received_data, str) else received_data
+            pass
 
     else:
 
         async def handle_receive(socket: WebSocket) -> Any:
-            received_data = await socket.receive_data(mode=listener._receive_mode)
-            return decode_json(value=received_data, type_decoders=socket.route_handler.type_decoders)
+            pass
 
     return handle_receive
 
@@ -59,24 +53,19 @@ def create_handle_send(
     if return_dto := listener.return_dto:
 
         async def handle_send(socket: WebSocket, data: Any) -> None:
-            encoded_data = return_dto(socket).data_to_encodable_type(data)
-            data = json_encoder.encode(encoded_data)
-            await socket.send_data(data=data, mode=listener._send_mode)
+            pass
 
     elif listener.parsed_return_field.is_subclass_of((str, bytes)) or (
         listener.parsed_return_field.is_optional and listener.parsed_return_field.has_inner_subclass_of((str, bytes))
     ):
 
         async def handle_send(socket: WebSocket, data: Any) -> None:
-            if data is not None:
-                await socket.send_data(data=data, mode=listener._send_mode)
+            pass
 
     else:
 
         async def handle_send(socket: WebSocket, data: Any) -> None:
-            if data is not None:
-                data = json_encoder.encode(data)
-                await socket.send_data(data=data, mode=listener._send_mode)
+            pass
 
     return handle_send
 
@@ -154,6 +143,6 @@ def create_stub_dependency(src: AnyCallable) -> Provide:
 
     @wraps(src)
     async def stub(**kwargs: Any) -> dict[str, Any]:
-        return kwargs
+        pass
 
     return Provide(stub)

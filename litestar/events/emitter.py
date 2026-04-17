@@ -78,12 +78,7 @@ class SimpleEventEmitter(BaseEventEmitterBackend):
         Returns:
             None
         """
-        async with receive_stream, anyio.create_task_group() as task_group:
-            async for item in receive_stream:
-                fn, args, kwargs = item
-                if kwargs:
-                    fn = partial(fn, **kwargs)
-                task_group.start_soon(fn, *args)
+        pass
 
     async def __aenter__(self) -> SimpleEventEmitter:
         self._exit_stack = AsyncExitStack()
@@ -120,11 +115,4 @@ class SimpleEventEmitter(BaseEventEmitterBackend):
         Returns:
             None
         """
-        if not (self._send_stream and self._exit_stack):
-            raise RuntimeError("Emitter not initialized")
-
-        if listeners := self.listeners.get(event_id):
-            for listener in listeners:
-                self._send_stream.send_nowait((listener.fn, args, kwargs))
-            return
-        raise ImproperlyConfiguredException(f"no event listeners are registered for event ID: {event_id}")
+        pass

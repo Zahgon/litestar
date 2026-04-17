@@ -24,7 +24,7 @@ class AsyncDeque(Queue, Generic[T]):
         super().__init__()
 
     def _init(self, maxsize: int) -> None:
-        self._queue: deque[T] = deque(maxlen=self._deque_maxlen)
+        pass
 
 
 class Subscriber:
@@ -51,15 +51,11 @@ class Subscriber:
 
     def put_nowait(self, item: bytes | None) -> bool:
         """Put an item in the subscriber's stream without waiting"""
-        try:
-            self._queue.put_nowait(item)
-            return True
-        except QueueFull:
-            return False
+        pass
 
     @property
     def qsize(self) -> int:
-        return self._queue.qsize()
+        pass
 
     async def iter_events(self) -> AsyncGenerator[bytes, None]:
         """Iterate over the stream of events. If no items are available, block until
@@ -87,16 +83,10 @@ class Subscriber:
                 stopping the worker. Note that an error occurring within the context
                 will always lead to the immediate cancellation of the worker
         """
-        self._start_in_background(on_event=on_event)
-        async with AsyncExitStack() as exit_stack:
-            exit_stack.push_async_callback(self.stop, join=False)
-            yield
-            exit_stack.pop_all()
-            await self.stop(join=join)
+        pass
 
     async def _worker(self, on_event: EventCallback) -> None:
-        async for event in self.iter_events():
-            await on_event(event)
+        pass
 
     def _start_in_background(self, on_event: EventCallback) -> None:
         """Start a task in the background that sends events from the subscriber's stream
@@ -105,14 +95,12 @@ class Subscriber:
         Args:
             on_event: Callback to invoke with the event data for every event
         """
-        if self._task is not None:
-            raise RuntimeError("Subscriber is already running")
-        self._task = asyncio.create_task(self._worker(on_event))
+        pass
 
     @property
     def is_running(self) -> bool:
         """Return whether a sending task is currently running"""
-        return self._task is not None
+        pass
 
     async def stop(self, join: bool = False) -> None:
         """Stop a task was previously started with :meth:`run_in_background`. If the

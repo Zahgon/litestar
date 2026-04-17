@@ -23,27 +23,17 @@ ExceptionToProblemDetailMapType: TypeAlias = (
 
 
 def _problem_details_exception_handler(request: Request[Any, Any, Any], exc: ProblemDetailsException) -> Response[Any]:
-    return exc.to_response(request)
+    pass
 
 
 def _create_exception_handler(
     exc_to_problem_details_exc_fn: Callable[[ExceptionT], ProblemDetailsException], exc_type: type[ExceptionT]
 ) -> ExceptionHandler[ExceptionT]:
-    def _exception_handler(req: Request, exc: exc_type) -> Response:  # type: ignore[valid-type]
-        problem_details_exc = exc_to_problem_details_exc_fn(exc)
-
-        return problem_details_exc.to_response(req)
-
-    return _exception_handler
+    pass
 
 
 def _http_exception_to_problem_detail_exception(exc: HTTPException) -> ProblemDetailsException:
-    return ProblemDetailsException(
-        status_code=exc.status_code,
-        title=exc.detail,
-        extra=exc.extra,
-        headers=exc.headers,
-    )
+    pass
 
 
 class ProblemDetailsException(HTTPException):
@@ -140,14 +130,4 @@ class ProblemDetailsPlugin(InitPlugin):
         self.config = config or ProblemDetailsConfig()
 
     def on_app_init(self, app_config: AppConfig) -> AppConfig:
-        app_config.exception_handlers[ProblemDetailsException] = self.config.exception_handler
-
-        if self.config.enable_for_all_http_exceptions:
-            app_config.exception_handlers[HTTPException] = _create_exception_handler(
-                _http_exception_to_problem_detail_exception, HTTPException
-            )
-
-        for exc_type, conversion_fn in self.config.exception_to_problem_detail_map.items():
-            app_config.exception_handlers[exc_type] = _create_exception_handler(conversion_fn, exc_type)
-
-        return app_config
+        pass

@@ -102,17 +102,7 @@ class BaseJWTAuth(Generic[UserType, TokenT], AbstractSecurityConfig[UserType, To
         Returns:
             An :class:`Components <litestar.openapi.spec.components.Components>` instance.
         """
-        return Components(
-            security_schemes={
-                self.openapi_security_scheme_name: SecurityScheme(
-                    type="http",
-                    scheme="Bearer",
-                    name=self.auth_header,
-                    bearer_format="JWT",
-                    description=self.description,
-                )
-            }
-        )
+        pass
 
     @property
     def security_requirement(self) -> SecurityRequirement:
@@ -125,7 +115,7 @@ class BaseJWTAuth(Generic[UserType, TokenT], AbstractSecurityConfig[UserType, To
             :data:`SecurityRequirement <.openapi.spec.SecurityRequirement>`
             dictionary.
         """
-        return {self.openapi_security_scheme_name: []}
+        pass
 
     @property
     def middleware(self) -> DefineMiddleware:
@@ -459,18 +449,7 @@ class JWTCookieAuth(Generic[UserType, TokenT], BaseJWTAuth[UserType, TokenT]):
         Returns:
             A :class:`Components <litestar.openapi.spec.components.Components>` instance.
         """
-        return Components(
-            security_schemes={
-                self.openapi_security_scheme_name: SecurityScheme(
-                    type="http",
-                    scheme="Bearer",
-                    name=self.key,
-                    security_scheme_in="cookie",
-                    bearer_format="JWT",
-                    description=self.description,
-                )
-            }
-        )
+        pass
 
     @property
     def middleware(self) -> DefineMiddleware:
@@ -728,10 +707,7 @@ class OAuth2PasswordBearerAuth(Generic[UserType, TokenT], BaseJWTAuth[UserType, 
         Returns:
             An :class:`OAuthFlow <litestar.openapi.spec.oauth_flow.OAuthFlow>` instance.
         """
-        return OAuthFlow(
-            token_url=self.token_url,
-            scopes=self.oauth_scopes,
-        )
+        pass
 
     @property
     def openapi_components(self) -> Components:
@@ -740,19 +716,7 @@ class OAuth2PasswordBearerAuth(Generic[UserType, TokenT], BaseJWTAuth[UserType, 
         Returns:
             An :class:`Components <litestar.openapi.spec.components.Components>` instance.
         """
-        return Components(
-            security_schemes={
-                self.openapi_security_scheme_name: SecurityScheme(
-                    type="oauth2",
-                    scheme="Bearer",
-                    name=self.auth_header,
-                    security_scheme_in="header",
-                    flows=OAuthFlows(password=self.oauth_flow),
-                    bearer_format="JWT",
-                    description=self.description,
-                )
-            }
-        )
+        pass
 
     def login(
         self,

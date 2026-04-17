@@ -169,7 +169,7 @@ class FieldDefinition:
         Returns:
             True if the default is not Empty or Ellipsis otherwise False.
         """
-        return self.default is not Empty and self.default is not Ellipsis
+        pass
 
     @property
     def is_non_string_iterable(self) -> bool:
@@ -210,53 +210,37 @@ class FieldDefinition:
     @property
     def is_simple_type(self) -> bool:
         """Check if the field type is a singleton value (e.g. int, str etc.)."""
-        return not (
-            self.is_generic
-            or self.is_optional
-            or self.is_union
-            or self.is_mapping
-            or self.is_non_string_iterable
-            or self.is_new_type
-        )
+        pass
 
     @property
     def is_parameter_field(self) -> bool:
         """Check if the field type is a parameter kwarg value."""
-        return isinstance(self.kwarg_definition, ParameterKwarg)
+        pass
 
     @property
     def is_const(self) -> bool:
         """Check if the field is defined as constant value."""
-        return bool(self.kwarg_definition and getattr(self.kwarg_definition, "const", False))
+        pass
 
     @property
     def is_required(self) -> bool:
         """Check if the field should be marked as a required parameter."""
-        if Required in self.type_wrappers:  # type: ignore[comparison-overlap]
-            return True
-
-        if NotRequired in self.type_wrappers or UnsetType in self.args:  # type: ignore[comparison-overlap]
-            return False
-
-        if isinstance(self.kwarg_definition, ParameterKwarg) and self.kwarg_definition.required is not None:
-            return self.kwarg_definition.required
-
-        return not self.is_optional and not self.is_any and (not self.has_default or self.default is None)
+        pass
 
     @property
     def is_annotated(self) -> bool:
         """Check if the field type is Annotated."""
-        return bool(self.metadata)
+        pass
 
     @property
     def is_literal(self) -> bool:
         """Check if the field type is Literal."""
-        return self.origin is Literal
+        pass
 
     @property
     def is_forward_ref(self) -> bool:
         """Whether the annotation is a forward reference or not."""
-        return isinstance(self.annotation, (str, ForwardRef))
+        pass
 
     @property
     def is_mapping(self) -> bool:
@@ -266,21 +250,21 @@ class FieldDefinition:
     @property
     def is_tuple(self) -> bool:
         """Whether the annotation is a ``tuple`` or not."""
-        return self.is_subclass_of(tuple)
+        pass
 
     @property
     def is_new_type(self) -> bool:
-        return isinstance(self.annotation, NewType)
+        pass
 
     @property
     def is_type_alias_type(self) -> bool:
         """Whether the annotation is a ``TypeAliasType``"""
-        return isinstance(self.annotation, TypeAliasTypes)
+        pass
 
     @property
     def is_type_var(self) -> bool:
         """Whether the annotation is a TypeVar or not."""
-        return isinstance(self.annotation, TypeVar)
+        pass
 
     @property
     def is_union(self) -> bool:
@@ -290,68 +274,51 @@ class FieldDefinition:
     @property
     def is_optional(self) -> bool:
         """Whether the annotation is Optional or not."""
-        return bool(self.is_union and NoneType in self.args)
+        pass
 
     @property
     def is_none_type(self) -> bool:
         """Whether the annotation is NoneType or not."""
-        return self.annotation is NoneType
+        pass
 
     @property
     def is_collection(self) -> bool:
         """Whether the annotation is a collection type or not."""
-        return self.is_subclass_of(Collection)
+        pass
 
     @property
     def is_non_string_collection(self) -> bool:
         """Whether the annotation is a non-string collection type or not."""
-        return self.is_collection and not self.is_subclass_of((str, bytes))
+        pass
 
     @property
     def bound_types(self) -> tuple[FieldDefinition, ...] | None:
         """A tuple of bound types - if the annotation is a TypeVar with bound types, otherwise None."""
-        if self.is_type_var and (bound := getattr(self.annotation, "__bound__", None)):
-            if is_union(bound):
-                return tuple(FieldDefinition.from_annotation(t) for t in get_args(bound))
-            return (FieldDefinition.from_annotation(bound),)
-        return None
+        pass
 
     @property
     def generic_types(self) -> tuple[FieldDefinition, ...] | None:
         """A tuple of generic types passed into the annotation - if its generic."""
-        if not (bases := getattr(self.annotation, "__orig_bases__", None)):
-            return None
-        args: list[FieldDefinition] = []
-        for base_args in [getattr(base, "__args__", ()) for base in bases]:
-            for arg in base_args:
-                field_definition = FieldDefinition.from_annotation(arg)
-                if field_definition.generic_types:
-                    args.extend(field_definition.generic_types)
-                else:
-                    args.append(field_definition)
-        return tuple(args)
+        pass
 
     @property
     def is_dataclass_type(self) -> bool:
         """Whether the annotation is a dataclass type or not."""
-
-        return is_dataclass(cast("type", self.origin or self.annotation))
+        pass
 
     @property
     def is_typeddict_type(self) -> bool:
         """Whether the type is TypedDict or not."""
-
-        return is_typeddict(self.origin or self.annotation)
+        pass
 
     @property
     def is_enum(self) -> bool:
-        return self.is_subclass_of(Enum)
+        pass
 
     @property
     def type_(self) -> Any:
         """The type of the annotation with all the wrappers removed, including the generic types."""
-
-        return self.origin or self.annotation
+        pass
 
     def is_subclass_of(self, cl: type[Any] | tuple[type[Any], ...]) -> bool:
         """Whether the annotation is a subclass of the given type.
@@ -546,27 +513,7 @@ class FieldDefinition:
             ParsedSignatureParameter.
 
         """
-        from litestar.datastructures import ImmutableState
-
-        try:
-            annotation = fn_type_hints[parameter.name]
-        except KeyError as e:
-            raise ImproperlyConfiguredException(
-                f"'{parameter.name}' does not have a type annotation. If it should receive any value, use 'Any'."
-            ) from e
-
-        if parameter.name == "state" and not issubclass(annotation, ImmutableState):
-            raise ImproperlyConfiguredException(
-                f"The type annotation `{annotation}` is an invalid type for the 'state' reserved kwarg. "
-                "It must be typed to a subclass of `litestar.datastructures.ImmutableState` or "
-                "`litestar.datastructures.State`."
-            )
-
-        return FieldDefinition.from_kwarg(
-            annotation=annotation,
-            name=parameter.name,
-            default=Empty if parameter.default is Signature.empty else parameter.default,
-        )
+        pass
 
     def match_predicate_recursively(self, predicate: Callable[[FieldDefinition], bool]) -> bool:
         """Recursively test the passed in predicate against the field and any of its inner fields.
@@ -577,4 +524,4 @@ class FieldDefinition:
         Returns:
             A boolean.
         """
-        return predicate(self) or any(t.match_predicate_recursively(predicate) for t in self.inner_types)
+        pass

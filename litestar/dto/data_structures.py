@@ -104,22 +104,4 @@ class DTOFieldDefinition(FieldDefinition):
         Returns:
             A :class:`FieldDefinition` instance.
         """
-        return DTOFieldDefinition(
-            annotation=field_definition.annotation,
-            args=field_definition.args,
-            default=field_definition.default,
-            default_factory=default_factory,
-            dto_field=dto_field,
-            extra=field_definition.extra,
-            inner_types=field_definition.inner_types,
-            instantiable_origin=field_definition.instantiable_origin,
-            kwarg_definition=field_definition.kwarg_definition,
-            metadata=field_definition.metadata,
-            model_name=model_name,
-            name=field_definition.name,
-            origin=field_definition.origin,
-            raw=field_definition.raw,
-            safe_generic_origin=field_definition.safe_generic_origin,
-            type_wrappers=field_definition.type_wrappers,
-            passthrough_constraints=passthrough_constraints,
-        )
+        pass

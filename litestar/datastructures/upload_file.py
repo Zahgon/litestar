@@ -47,7 +47,7 @@ class UploadFile:
         Returns:
             A boolean flag
         """
-        return getattr(self.file, "_rolled", False)
+        pass
 
     async def write(self, data: bytes | bytearray) -> int:
         """Proxy for data writing.

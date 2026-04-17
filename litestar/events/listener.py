@@ -66,15 +66,7 @@ class EventListener:
         Args:
             fn: The listener function to wrap.
         """
-
-        async def wrapped(*args: Any, **kwargs: Any) -> None:
-            """Wrap a listener function to handle errors."""
-            try:
-                await fn(*args, **kwargs)
-            except Exception as exc:
-                logger.exception("Error while executing listener %s: %s", fn.__name__, exc)
-
-        return wrapped
+        pass
 
     def __hash__(self) -> int:
         return hash(self.event_ids) + hash(self.fn)

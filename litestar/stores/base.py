@@ -127,20 +127,18 @@ class StorageObject(Struct):
     @property
     def expired(self) -> bool:
         """Return if the :class:`StorageObject` is expired"""
-        return self.expires_at is not None and datetime.now(tz=UTC) >= self.expires_at
+        pass
 
     @property
     def expires_in(self) -> int:
         """Return the expiry time of this ``StorageObject`` in seconds. If no expiry time
         was set, return ``-1``.
         """
-        if self.expires_at:
-            return int(self.expires_at.timestamp() - datetime.now(tz=UTC).timestamp())
-        return -1
+        pass
 
     def to_bytes(self) -> bytes:
         """Encode the instance to bytes"""
-        return msgpack_encode(self)
+        pass
 
     @classmethod
     def from_bytes(cls, raw: bytes) -> StorageObject:

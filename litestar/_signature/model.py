@@ -79,23 +79,7 @@ DEFAULT_TYPE_DECODERS = [
 
 
 def _deserializer(target_type: Any, value: Any, default_deserializer: Callable[[Any, Any], Any]) -> Any:
-    if isinstance(value, DTOData):
-        return value
-
-    try:
-        if isinstance(value, target_type):
-            return value
-    except TypeError as exc:
-        if (origin := get_origin_or_inner_type(target_type)) is not None:
-            if isinstance(value, origin):
-                return value
-        else:
-            raise exc
-
-    if decoder := getattr(target_type, "_decoder", None):
-        return decoder(target_type, value)
-
-    return default_deserializer(target_type, value)
+    pass
 
 
 class SignatureModel(Struct):
@@ -231,59 +215,7 @@ class SignatureModel(Struct):
         type_decoders: TypeDecodersSequence,
         data_dto: type[AbstractDTO] | None = None,
     ) -> type[SignatureModel]:
-        fn_name = (
-            fn_name if (fn_name := getattr(fn, "__name__", "anonymous")) and fn_name != "<lambda>" else "anonymous"
-        )
-
-        dependency_names = _validate_signature_dependencies(
-            dependency_name_set=dependency_name_set, fn_name=fn_name, parsed_signature=parsed_signature
-        )
-
-        struct_fields: list[tuple[str, Any, Any]] = []
-
-        for field_definition in parsed_signature.parameters.values():
-            meta_data: Meta | None = None
-
-            if isinstance(field_definition.kwarg_definition, KwargDefinition):
-                meta_kwargs: dict[str, Any] = {"extra": {}}
-
-                kwarg_definition = simple_asdict(field_definition.kwarg_definition, exclude_empty=True)
-                if min_items := kwarg_definition.pop("min_items", None):
-                    meta_kwargs["min_length"] = min_items
-                if max_items := kwarg_definition.pop("max_items", None):
-                    meta_kwargs["max_length"] = max_items
-
-                for k, v in kwarg_definition.items():
-                    if hasattr(Meta, k) and v is not None:
-                        meta_kwargs[k] = v
-                    else:
-                        meta_kwargs["extra"][k] = v
-
-                meta_data = Meta(**meta_kwargs)
-
-            annotation = cls._create_annotation(
-                field_definition=field_definition,
-                type_decoders=[*(type_decoders or []), *DEFAULT_TYPE_DECODERS],
-                meta_data=meta_data,
-                data_dto=data_dto,
-            )
-
-            default = field_definition.default if field_definition.has_default else NODEFAULT
-            struct_fields.append((field_definition.name, annotation, default))
-
-        return defstruct(  # type:ignore[return-value]
-            f"{fn_name}_signature_model",
-            struct_fields,
-            bases=(cls,),
-            module=getattr(fn, "__module__", None),
-            namespace={
-                "_return_annotation": parsed_signature.return_type.annotation,
-                "_dependency_name_set": dependency_names,
-                "_fields": parsed_signature.parameters,
-                "_data_dto": data_dto,
-            },
-            kw_only=True,
-        )
+        pass
 
     @classmethod
     def _create_annotation(
@@ -294,30 +226,4 @@ class SignatureModel(Struct):
         data_dto: type[AbstractDTO] | None = None,
     ) -> Any:
         # DTOs have already validated their data, so we can just use Any here
-        if field_definition.name == "data" and data_dto:
-            return Any
-
-        annotation = _normalize_annotation(field_definition=field_definition)
-
-        if annotation is Any:
-            return annotation
-
-        if field_definition.is_union:
-            types = [
-                cls._create_annotation(
-                    field_definition=inner_type,
-                    type_decoders=type_decoders,
-                    meta_data=meta_data,
-                )
-                for inner_type in field_definition.inner_types
-                if not inner_type.is_none_type
-            ]
-            return Optional[Union[tuple(types)]] if field_definition.is_optional else Union[tuple(types)]  # pyright: ignore # noqa: UP045
-
-        if decoder := _get_decoder_for_type(annotation, type_decoders=type_decoders):
-            # FIXME: temporary (hopefully) hack, see: https://github.com/jcrist/msgspec/issues/497
-            setattr(annotation, "_decoder", decoder)
-
-        if meta_data:
-            annotation = Annotated[annotation, meta_data]
-        return annotation
+        pass

@@ -44,7 +44,7 @@ class BaseSchemaObject:
 
     @property
     def _exclude_fields(self) -> set[str]:
-        return set()
+        pass
 
     def _iter_fields(self) -> Iterator[Field[Any]]:
         yield from fields(self)

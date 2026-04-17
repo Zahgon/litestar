@@ -35,10 +35,7 @@ class MemoryStore(Store):
         Returns:
             ``None``
         """
-        if isinstance(value, str):
-            value = value.encode("utf-8")
-        async with self._lock:
-            self._store[key] = StorageObject.new(data=value, expires_in=expires_in)
+        pass
 
     async def get(self, key: str, renew_for: int | timedelta | None = None) -> bytes | None:
         """Get a value.
@@ -83,8 +80,7 @@ class MemoryStore(Store):
 
     async def delete_all(self) -> None:
         """Delete all stored values."""
-        async with self._lock:
-            self._store.clear()
+        pass
 
     async def delete_expired(self) -> None:
         """Delete expired items.
@@ -93,14 +89,7 @@ class MemoryStore(Store):
         :meth:`.get`), this method should be called in regular intervals
         to free memory.
         """
-        async with self._lock:
-            new_store = {}
-            for i, (key, storage_obj) in enumerate(self._store.items()):
-                if not storage_obj.expired:
-                    new_store[key] = storage_obj
-                if i % 1000 == 0:
-                    await anyio.sleep(0)
-            self._store = new_store
+        pass
 
     async def exists(self, key: str) -> bool:
         """Check if a given ``key`` exists."""
@@ -110,6 +99,4 @@ class MemoryStore(Store):
         """Get the time in seconds ``key`` expires in. If no such ``key`` exists or no
         expiry time was set, return ``None``.
         """
-        if storage_obj := self._store.get(key):
-            return storage_obj.expires_in
-        return None
+        pass

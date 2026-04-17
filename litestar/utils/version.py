@@ -25,10 +25,7 @@ class Version(NamedTuple):
     serial: int
 
     def formatted(self, short: bool = False) -> str:
-        version = f"{self.major}.{self.minor}.{self.patch}"
-        if not short:
-            version += f"{self.release_level}{self.serial}"
-        return version
+        pass
 
 
 def parse_version(raw_version: str) -> Version:

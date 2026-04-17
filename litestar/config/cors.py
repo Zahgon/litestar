@@ -66,14 +66,7 @@ class CORSConfig:
         Returns:
             A compiled regex of the allowed path.
         """
-        # escape the allowed origins, while turning '*' into wildcard '.*' matches
-        origins = [
-            re.escape(o.replace("*", _RE_ESCAPE_PLACEHOLDER)).replace(_RE_ESCAPE_PLACEHOLDER, ".*")
-            for o in self.allow_origins
-        ]
-        if self.allow_origin_regex:
-            origins.append(self.allow_origin_regex)
-        return re.compile("|".join(origins))
+        pass
 
     @cached_property
     def is_allow_all_origins(self) -> bool:
@@ -82,7 +75,7 @@ class CORSConfig:
         Returns:
             Boolean dictating whether all origins are allowed.
         """
-        return "*" in self.allow_origins
+        pass
 
     @cached_property
     def is_allow_all_methods(self) -> bool:
@@ -91,7 +84,7 @@ class CORSConfig:
         Returns:
             Boolean dictating whether all methods are allowed.
         """
-        return "*" in self.allow_methods
+        pass
 
     @cached_property
     def is_allow_all_headers(self) -> bool:
@@ -100,7 +93,7 @@ class CORSConfig:
         Returns:
             Boolean dictating whether all headers are allowed.
         """
-        return "*" in self.allow_headers
+        pass
 
     @cached_property
     def preflight_headers(self) -> dict[str, str]:
@@ -109,26 +102,7 @@ class CORSConfig:
         Returns:
             A dictionary of headers to set on the response object.
         """
-        headers: dict[str, str] = {"Access-Control-Max-Age": str(self.max_age)}
-        if self.is_allow_all_origins:
-            headers["Access-Control-Allow-Origin"] = "*"
-        else:
-            headers["Vary"] = "Origin"
-        if self.allow_credentials:
-            headers["Access-Control-Allow-Credentials"] = str(self.allow_credentials).lower()
-        if not self.is_allow_all_headers:
-            headers["Access-Control-Allow-Headers"] = ", ".join(
-                sorted(set(self.allow_headers) | DEFAULT_ALLOWED_CORS_HEADERS)
-            )
-        if self.allow_methods:
-            headers["Access-Control-Allow-Methods"] = ", ".join(
-                sorted(
-                    {"DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"}
-                    if self.is_allow_all_methods
-                    else set(self.allow_methods)
-                )
-            )
-        return headers
+        pass
 
     @cached_property
     def simple_headers(self) -> dict[str, str]:
@@ -137,14 +111,7 @@ class CORSConfig:
         Returns:
             A dictionary of headers to set on the response object.
         """
-        simple_headers = {}
-        if self.is_allow_all_origins:
-            simple_headers["Access-Control-Allow-Origin"] = "*"
-        if self.allow_credentials:
-            simple_headers["Access-Control-Allow-Credentials"] = "true"
-        if self.expose_headers:
-            simple_headers["Access-Control-Expose-Headers"] = ", ".join(sorted(set(self.expose_headers)))
-        return simple_headers
+        pass
 
     def is_origin_allowed(self, origin: str) -> bool:
         """Check whether a given origin is allowed.
@@ -155,4 +122,4 @@ class CORSConfig:
         Returns:
             Boolean determining whether an origin is allowed.
         """
-        return bool(self.is_allow_all_origins or self.allowed_origins_regex.fullmatch(origin))
+        pass

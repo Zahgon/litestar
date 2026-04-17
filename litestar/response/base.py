@@ -128,7 +128,7 @@ class ASGIResponse:
         The list contains both headers and encoded cookies, as tuples, where each tuple
         represents a single header key-value pair encoded as bytes.
         """
-        return [*self.headers.headers, *self._encoded_cookies]
+        pass
 
     async def after_response(self) -> None:
         """Execute after the response is sent.
@@ -136,8 +136,7 @@ class ASGIResponse:
         Returns:
             None
         """
-        if self.background is not None:
-            await self.background()
+        pass
 
     async def start_response(self, send: Send) -> None:
         """Emit the start event of the response. This event includes the headers and status codes.
@@ -148,12 +147,7 @@ class ASGIResponse:
         Returns:
             None
         """
-        event: HTTPResponseStartEvent = {
-            "type": "http.response.start",
-            "status": self.status_code,
-            "headers": self.encode_headers(),
-        }
-        await send(event)
+        pass
 
     async def send_body(self, send: Send, receive: Receive) -> None:
         """Emit the response body.
@@ -168,8 +162,7 @@ class ASGIResponse:
         Returns:
             None
         """
-        event: HTTPResponseBodyEvent = {"type": "http.response.body", "body": self.body, "more_body": False}
-        await send(event)
+        pass
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         """ASGI callable of the ``Response``.
@@ -322,7 +315,7 @@ class Response(Generic[T]):
         Returns:
             None.
         """
-        self.headers[key] = value
+        pass
 
     def set_etag(self, etag: str | ETag) -> None:
         """Set an etag header.
@@ -333,7 +326,7 @@ class Response(Generic[T]):
         Returns:
             None
         """
-        self.headers["etag"] = etag.to_header() if isinstance(etag, ETag) else etag
+        pass
 
     def delete_cookie(
         self,
@@ -351,9 +344,7 @@ class Response(Generic[T]):
         Returns:
             None.
         """
-        cookie = Cookie(key=key, path=path, domain=domain, expires=0, max_age=0)
-        self.cookies = [c for c in self.cookies if c != cookie]
-        self.cookies.append(cookie)
+        pass
 
     def render(self, content: Any, media_type: str, enc_hook: Serializer = default_serializer) -> bytes:
         """Handle the rendering of content into a bytes string.

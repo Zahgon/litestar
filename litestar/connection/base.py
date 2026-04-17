@@ -110,7 +110,7 @@ class ASGIConnection(Generic[HandlerT, UserT, AuthT, StateT]):
         Returns:
             The target route handler instance.
         """
-        return cast("HandlerT", self.scope["route_handler"])
+        pass
 
     @property
     def state(self) -> StateT:
@@ -119,7 +119,7 @@ class ASGIConnection(Generic[HandlerT, UserT, AuthT, StateT]):
         Returns:
             A State instance constructed from the scope["state"] value.
         """
-        return cast("StateT", State(self.scope.get("state")))
+        pass
 
     @property
     def url(self) -> URL:
@@ -128,13 +128,7 @@ class ASGIConnection(Generic[HandlerT, UserT, AuthT, StateT]):
         Returns:
             A URL instance constructed from the request's scope.
         """
-        if self._url is Empty:
-            if (url := self._connection_state.url) is not Empty:
-                self._url = url
-            else:
-                self._connection_state.url = self._url = URL.from_scope(self.scope)
-
-        return self._url
+        pass
 
     @property
     def base_url(self) -> URL:
@@ -144,21 +138,7 @@ class ASGIConnection(Generic[HandlerT, UserT, AuthT, StateT]):
             A URL instance constructed from the request's scope, representing only the base part
             (host + domain + prefix) of the request.
         """
-        if self._base_url is Empty:
-            if (base_url := self._connection_state.base_url) is not Empty:
-                self._base_url = base_url
-            else:
-                scope = cast(
-                    "Scope",
-                    {
-                        **self.scope,
-                        "path": "/",
-                        "query_string": b"",
-                        "root_path": self.scope.get("app_root_path") or self.scope.get("root_path", ""),
-                    },
-                )
-                self._connection_state.base_url = self._base_url = URL.from_scope(scope)
-        return self._base_url
+        pass
 
     @property
     def headers(self) -> Headers:
@@ -167,7 +147,7 @@ class ASGIConnection(Generic[HandlerT, UserT, AuthT, StateT]):
         Returns:
             A Headers instance with the request's scope["headers"] value.
         """
-        return Headers.from_scope(self.scope)
+        pass
 
     @property
     def query_params(self) -> MultiDict[Any]:
@@ -176,14 +156,7 @@ class ASGIConnection(Generic[HandlerT, UserT, AuthT, StateT]):
         Returns:
             A normalized dict of query parameters. Multiple values for the same key are returned as a list.
         """
-        if self._parsed_query is Empty:
-            if (parsed_query := self._connection_state.parsed_query) is not Empty:
-                self._parsed_query = parsed_query
-            else:
-                self._connection_state.parsed_query = self._parsed_query = parse_query_string(
-                    self.scope.get("query_string", b"")
-                )
-        return MultiDict(self._parsed_query)
+        pass
 
     @property
     def path_params(self) -> dict[str, Any]:
@@ -192,7 +165,7 @@ class ASGIConnection(Generic[HandlerT, UserT, AuthT, StateT]):
         Returns:
             A string keyed dictionary of path parameter values.
         """
-        return self.scope["path_params"]
+        pass
 
     @property
     def cookies(self) -> dict[str, str]:
@@ -201,14 +174,7 @@ class ASGIConnection(Generic[HandlerT, UserT, AuthT, StateT]):
         Returns:
             Returns any cookies stored in the header as a parsed dictionary.
         """
-        if self._cookies is Empty:
-            if (cookies := self._connection_state.cookies) is not Empty:
-                self._cookies = cookies
-            else:
-                self._connection_state.cookies = self._cookies = (
-                    parse_cookie_string(cookie_header) if (cookie_header := self.headers.get("cookie")) else {}
-                )
-        return self._cookies
+        pass
 
     @property
     def client(self) -> Address | None:
@@ -217,8 +183,7 @@ class ASGIConnection(Generic[HandlerT, UserT, AuthT, StateT]):
         Returns:
             A two tuple of the host name and port number.
         """
-        client = self.scope.get("client")
-        return Address(*client) if client else None
+        pass
 
     @property
     def auth(self) -> AuthT:
@@ -230,10 +195,7 @@ class ASGIConnection(Generic[HandlerT, UserT, AuthT, StateT]):
         Returns:
             A type correlating to the generic variable Auth.
         """
-        if "auth" not in self.scope:
-            raise ImproperlyConfiguredException("'auth' is not defined in scope, install an AuthMiddleware to set it")
-
-        return cast("AuthT", self.scope["auth"])
+        pass
 
     @property
     def user(self) -> UserT:
@@ -245,10 +207,7 @@ class ASGIConnection(Generic[HandlerT, UserT, AuthT, StateT]):
         Returns:
             A type correlating to the generic variable User.
         """
-        if "user" not in self.scope:
-            raise ImproperlyConfiguredException("'user' is not defined in scope, install an AuthMiddleware to set it")
-
-        return cast("UserT", self.scope["user"])
+        pass
 
     @property
     def session(self) -> dict[str, Any]:
@@ -260,12 +219,7 @@ class ASGIConnection(Generic[HandlerT, UserT, AuthT, StateT]):
         Raises:
             ImproperlyConfiguredException: if session is not set in scope.
         """
-        if "session" not in self.scope:
-            raise ImproperlyConfiguredException(
-                "'session' is not defined in scope, install a SessionMiddleware to set it"
-            )
-
-        return cast("dict[str, Any]", self.scope["session"])
+        pass
 
     def set_session(self, value: dict[str, Any] | DataContainerType | EmptyType) -> None:
         """Set the session in the connection's ``Scope``.
@@ -290,8 +244,7 @@ class ASGIConnection(Generic[HandlerT, UserT, AuthT, StateT]):
         Returns:
             None.
         """
-        self.scope["session"] = Empty
-        self._connection_state.session_id = Empty
+        pass
 
     def get_session_id(self) -> str | None:
         return value_or_default(value=self._connection_state.session_id, default=None)

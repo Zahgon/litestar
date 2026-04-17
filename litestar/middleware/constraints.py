@@ -75,7 +75,7 @@ class _ResolvedMiddlewareConstraints:
 
     @property
     def is_empty(self) -> bool:
-        return not (self.before or self.after or self.first or self.last or self.unique)
+        pass
 
 
 @dataclasses.dataclass(frozen=True)
@@ -128,15 +128,15 @@ class MiddlewareConstraints:
 
     def require_unique(self, unique: bool) -> Self:
         """Return a new constraint with a ``unique`` value set"""
-        return dataclasses.replace(self, unique=unique)
+        pass
 
     def apply_first(self) -> Self:
         """Return a new constraint with ``first=True``. Overrides ``last=True``"""
-        return dataclasses.replace(self, first=True, last=False, unique=True)
+        pass
 
     def apply_last(self) -> Self:
         """Return a new constraint with ``first=True``. Overrides ``first=True``"""
-        return dataclasses.replace(self, first=False, last=True, unique=True)
+        pass
 
     def apply_before(
         self,
@@ -152,10 +152,7 @@ class MiddlewareConstraints:
         :param ignore_import_error: If ``True`` and ``other`` is a string, ignore the constraint if
             an :exc:`ImportError` occurs when trying to import it
         """
-        if isinstance(other, str):
-            other = MiddlewareForwardRef(target=other, ignore_import_error=ignore_import_error)
-
-        return dataclasses.replace(self, before=(*self.before, other))
+        pass
 
     def apply_after(
         self,
@@ -171,10 +168,7 @@ class MiddlewareConstraints:
         :param ignore_import_error: If ``True`` and ``other`` is a string, ignore the constraint if
             an :exc:`ImportError` occurs when trying to import it
         """
-        if isinstance(other, str):
-            other = MiddlewareForwardRef(target=other, ignore_import_error=ignore_import_error)
-
-        return dataclasses.replace(self, after=(*self.after, other))
+        pass
 
     @staticmethod
     def _resolve_middleware(

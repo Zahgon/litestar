@@ -27,12 +27,7 @@ def create_options_handler(path: str, allow_methods: Iterable[Method]) -> HTTPRo
         Returns:
             Response
         """
-        return Response(
-            content=None,
-            status_code=HTTP_204_NO_CONTENT,
-            headers={"Allow": ", ".join(sorted(allow_methods))},
-            media_type=MediaType.TEXT,
-        )
+        pass
 
     return HTTPRouteHandler(
         path=path, http_method=[HttpMethod.OPTIONS], include_in_schema=False, sync_to_thread=False, fn=options_handler

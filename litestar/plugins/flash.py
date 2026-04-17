@@ -50,22 +50,7 @@ class FlashPlugin(InitPlugin):
         Returns:
             The application configuration with the message callable registered.
         """
-        for mw in app_config.middleware:
-            if isinstance(mw, DefineMiddleware) and is_class_and_subclass(
-                mw.middleware, (MiddlewareWrapper, SessionMiddleware)
-            ):
-                break
-        else:
-            raise litestar.exceptions.ImproperlyConfiguredException("Flash messages require a session middleware.")
-        template_callable: Callable[[Any], Any] = get_flashes
-        with suppress(MissingDependencyException):
-            from litestar.contrib.minijinja import MiniJinjaTemplateEngine, _transform_state
-
-            if isinstance(self.config.template_config.engine_instance, MiniJinjaTemplateEngine):
-                template_callable = _transform_state(get_flashes)
-
-        self.config.template_config.engine_instance.register_template_callable("get_flashes", template_callable)
-        return app_config
+        pass
 
 
 def flash(
@@ -77,4 +62,4 @@ def flash(
 
 
 def get_flashes(context: Mapping[str, Any]) -> Any:
-    return _get_request_from_context(context).session.pop("_messages", [])
+    pass

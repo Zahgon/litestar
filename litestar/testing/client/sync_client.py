@@ -148,30 +148,7 @@ class TestClient(Client, Generic[T]):
         Returns:
             A `WebSocketTestSession <litestar.testing.WebSocketTestSession>` instance.
         """
-        try:
-            self.send(
-                _prepare_ws_connect_request(
-                    client=self,
-                    url=url,
-                    subprotocols=subprotocols,
-                    params=params,
-                    headers=headers,
-                    cookies=cookies,
-                    extensions=extensions,
-                    timeout=timeout,
-                ),
-                auth=auth,
-                follow_redirects=follow_redirects,
-            )
-        except ConnectionUpgradeExceptionError as exc:
-            return WebSocketTestSession(
-                client=self,
-                scope=exc.scope,
-                portal=self.blocking_portal,
-                connect_timeout=timeout,
-            )
-
-        raise RuntimeError("Expected WebSocket upgrade")  # pragma: no cover
+        pass
 
     def get_session_data(self) -> dict[str, Any]:
         """Get session data.
@@ -202,7 +179,7 @@ class TestClient(Client, Generic[T]):
                     assert await client.get_session_data() == {"foo": "bar"}
 
         """
-        return self.blocking_portal.call(_get_session_data, self)
+        pass
 
     def set_session_data(self, data: dict[str, Any]) -> None:
         """Set session data.
@@ -236,4 +213,4 @@ class TestClient(Client, Generic[T]):
                     assert await client.get("/test").json() == {"foo": "bar"}
 
         """
-        self.blocking_portal.call(_set_session_data, self, data)
+        pass

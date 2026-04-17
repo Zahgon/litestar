@@ -87,17 +87,7 @@ class ASGIRouteHandler(BaseRouteHandler):
         )
 
     def on_registration(self, route: BaseRoute, app: Litestar) -> None:
-        super().on_registration(app=app, route=route)
-
-        if self.copy_scope is None:
-            warnings.warn(
-                f"{self}: 'copy_scope' not set for ASGI handler. Leaving 'copy_scope' unset will warn about mounted "
-                "ASGI applications modifying the scope. Set 'copy_scope=True' to ensure calling into mounted ASGI apps "
-                "does not cause any side effects via scope mutations, or set 'copy_scope=False' if those mutations are "
-                "desired. 'copy'scope' will default to 'True' in Litestar 3",
-                category=DeprecationWarning,
-                stacklevel=1,
-            )
+        pass
 
     def _get_merge_opts(self, others: tuple[Router, ...]) -> dict[str, Any]:
         merge_opts = super()._get_merge_opts(others)
@@ -107,17 +97,7 @@ class ASGIRouteHandler(BaseRouteHandler):
 
     def _validate_handler_function(self) -> None:
         """Validate the route handler function once it's set by inspecting its return annotations."""
-        super()._validate_handler_function()
-
-        if not self.parsed_fn_signature.return_type.is_subclass_of(NoneType):
-            raise ImproperlyConfiguredException("ASGI handler functions should return 'None'")
-
-        if any(key not in self.parsed_fn_signature.parameters for key in ("scope", "send", "receive")):
-            raise ImproperlyConfiguredException(
-                "ASGI handler functions should define 'scope', 'send' and 'receive' arguments"
-            )
-        if not is_async_callable(self.fn):
-            raise ImproperlyConfiguredException("Functions decorated with 'asgi' must be async functions")
+        pass
 
     async def handle(self, connection: ASGIConnection[ASGIRouteHandler, Any, Any, Any]) -> None:
         """ASGI app that authorizes the connection and then awaits the handler function.

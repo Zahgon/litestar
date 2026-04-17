@@ -410,8 +410,7 @@ class HTTPRouteHandler(BaseRouteHandler):
         Returns:
             The default :class:`Request <.connection.Request>` class for the route handler.
         """
-
-        return self.request_class
+        pass
 
     @property
     def request_class(self) -> type[Request]:
@@ -426,7 +425,7 @@ class HTTPRouteHandler(BaseRouteHandler):
         Returns:
             The default :class:`Response <.response.Response>` class for the route handler.
         """
-        return self.response_class
+        pass
 
     @property
     def response_class(self) -> type[Response]:
@@ -434,7 +433,7 @@ class HTTPRouteHandler(BaseRouteHandler):
 
     @litestar_deprecated("3.0", removal_in="4.0", alternative=".response_headers attribute")
     def resolve_response_headers(self) -> frozenset[ResponseHeader]:
-        return self.response_headers
+        pass
 
     @staticmethod
     def _resolve_response_headers(
@@ -446,24 +445,11 @@ class HTTPRouteHandler(BaseRouteHandler):
         Returns:
             A dictionary mapping keys to :class:`ResponseHeader <.datastructures.ResponseHeader>` instances.
         """
-        resolved_response_headers: dict[str, ResponseHeader] = (
-            {h.name: h for h in narrow_response_headers(response_headers)} if response_headers else {}
-        )
-
-        for extra_header in extra_headers:
-            if extra_header is None:
-                continue
-            resolved_response_headers[extra_header.HEADER_NAME] = ResponseHeader(
-                name=extra_header.HEADER_NAME,
-                value=extra_header.to_header(),
-                documentation_only=extra_header.documentation_only,
-            )
-
-        return frozenset(resolved_response_headers.values())
+        pass
 
     @litestar_deprecated("3.0", removal_in="4.0", alternative=".response_cookies attribute")
     def resolve_response_cookies(self) -> frozenset[Cookie]:
-        return self.response_cookies
+        pass
 
     @litestar_deprecated("3.0", removal_in="4.0", alternative=".before_request attribute")
     def resolve_before_request(self) -> AsyncAnyCallable | None:
@@ -487,7 +473,7 @@ class HTTPRouteHandler(BaseRouteHandler):
         Returns:
             An optional :class:`after response lifecycle hook handler <.types.AfterResponseHookHandler>`
         """
-        return self.after_response
+        pass
 
     @litestar_deprecated("3.0", removal_in="4.0", alternative=".include_in_schema property")
     def resolve_include_in_schema(self) -> bool:
@@ -499,11 +485,11 @@ class HTTPRouteHandler(BaseRouteHandler):
         Returns:
             bool: The resolved 'include_in_schema' property.
         """
-        return self.include_in_schema
+        pass
 
     @property
     def include_in_schema(self) -> bool:
-        return self._include_in_schema if self._include_in_schema is not Empty else True
+        pass
 
     @litestar_deprecated("3.0", removal_in="4.0", alternative=".security attribute")
     def resolve_security(self) -> tuple[SecurityRequirement, ...]:
@@ -515,7 +501,7 @@ class HTTPRouteHandler(BaseRouteHandler):
         Returns:
             list[SecurityRequirement]: The resolved security property.
         """
-        return self.security
+        pass
 
     @litestar_deprecated("3.0", removal_in="4.0", alternative=".tags attribute")
     def resolve_tags(self) -> frozenset[str]:
@@ -523,37 +509,18 @@ class HTTPRouteHandler(BaseRouteHandler):
 
         Tags are additive, so the tags of the route handler are the sum of all tags of the ownership layers.
         """
-        return self.tags
+        pass
 
     @litestar_deprecated("3.0", removal_in="4.0", alternative=".request_max_body_size property")
     def resolve_request_max_body_size(self) -> int | None:
-        return self.request_max_body_size
+        pass
 
     @property
     def request_max_body_size(self) -> int | None:
-        return value_or_default(self._request_max_body_size, None)  # pyright: ignore[reportReturnType]
+        pass
 
     def on_registration(self, route: BaseRoute, app: Litestar) -> None:
-        super().on_registration(route=route, app=app)
-
-        if self._request_max_body_size is Empty:
-            raise ImproperlyConfiguredException(
-                "'request_max_body_size' set to 'Empty' on all layers. To omit a limit, "
-                "set 'request_max_body_size=None'"
-            )
-
-        self._get_kwargs_model_for_route(route.path_parameters)
-        self._default_response_handler, self._response_type_handler = self._create_response_handlers(
-            media_type=self.media_type,
-            response_class=self.response_class,
-            cookies=self.response_cookies,
-            headers=self.response_headers,
-            type_encoders=self.type_encoders,
-            return_type=self.parsed_fn_signature.return_type,
-            status_code=self.status_code,
-            background=self.background,
-            after_request=self.after_request,
-        )
+        pass
 
     def _get_kwargs_model_for_route(self, path_parameters: Iterable[str]) -> KwargsModel:
         key = tuple(path_parameters)
@@ -563,59 +530,7 @@ class HTTPRouteHandler(BaseRouteHandler):
 
     def _validate_handler_function(self) -> None:
         """Validate the route handler function once it is set by inspecting its return annotations."""
-        super()._validate_handler_function()
-
-        return_type = self.parsed_fn_signature.return_type
-
-        if return_type.annotation is Empty:
-            raise ImproperlyConfiguredException(
-                f"Missing return type annotation for route handler function {self!r}. "
-                "If your function doesn't return a value, annotate it as returning 'None'."
-            )
-
-        if (
-            self.status_code < 200 or self.status_code in {HTTP_204_NO_CONTENT, HTTP_304_NOT_MODIFIED}
-        ) and not is_empty_response_annotation(return_type):
-            raise ImproperlyConfiguredException(
-                "A status code 204, 304 or in the range below 200 does not support a response body. "
-                f"If {self} should return a value, change the route handler status code to an appropriate value.",
-            )
-
-        if not self.media_type:
-            if return_type.is_subclass_of((str, bytes)) or return_type.annotation is AnyStr:
-                self.media_type = MediaType.TEXT
-            elif not return_type.is_subclass_of(Response):
-                self.media_type = MediaType.JSON
-
-        if "socket" in self.parsed_fn_signature.parameters:
-            raise ImproperlyConfiguredException("The 'socket' kwarg is not supported with http handlers")
-
-        if "data" in self.parsed_fn_signature.parameters and "GET" in self.http_methods:
-            raise ImproperlyConfiguredException("'data' kwarg is unsupported for 'GET' request handlers")
-
-        if self.http_methods == {HttpMethod.HEAD} and not self.parsed_fn_signature.return_type.is_subclass_of(
-            (
-                NoneType,
-                File,
-                ASGIFileResponse,
-            )
-        ):
-            field_definition = self.parsed_fn_signature.return_type
-            if not (
-                is_empty_response_annotation(field_definition)
-                or is_class_and_subclass(field_definition.annotation, File)
-                or is_class_and_subclass(field_definition.annotation, ASGIFileResponse)
-            ):
-                raise ImproperlyConfiguredException(
-                    f"{self}: Handlers for 'HEAD' requests must not return a value. Either return 'None' or a response type without a body."
-                )
-
-        if (body_param := self.parsed_fn_signature.parameters.get("body")) and not body_param.is_subclass_of(bytes):
-            raise ImproperlyConfiguredException(
-                f"Invalid type annotation for 'body' parameter in route handler {self}. 'body' will always receive the "
-                f"raw request body as bytes but was annotated with '{body_param.raw!r}'. If you want to receive "
-                "processed request data, use the 'data' parameter."
-            )
+        pass
 
     @staticmethod
     def _create_response_handlers(
@@ -630,34 +545,7 @@ class HTTPRouteHandler(BaseRouteHandler):
         background: BackgroundTask | BackgroundTasks | None,
         after_request: AfterRequestHookHandler | None,
     ) -> tuple[Callable[..., Awaitable[ASGIApp]], Callable[..., Awaitable[ASGIApp]]]:
-        media_type = media_type.value if isinstance(media_type, Enum) else media_type
-        return_annotation = return_type.annotation
-
-        response_type_handler = create_response_handler(
-            after_request=after_request,
-            background=background,
-            cookies=cookies,
-            headers=headers,
-            media_type=media_type,
-            status_code=status_code,
-            type_encoders=type_encoders,
-        )
-
-        if is_async_callable(return_annotation) or return_annotation is ASGIApp:
-            default_handler = create_generic_asgi_response_handler(after_request=after_request)
-        else:
-            default_handler = create_data_handler(
-                after_request=after_request,
-                background=background,
-                cookies=cookies,
-                headers=headers,
-                media_type=media_type,
-                response_class=response_class,
-                status_code=status_code,
-                type_encoders=type_encoders,
-            )
-
-        return default_handler, response_type_handler
+        pass
 
     async def handle(self, connection: Request[Any, Any, Any]) -> None:
         """ASGI app that creates a :class:`~.connection.Request` from the passed in args, determines which handler function to call and then
@@ -774,9 +662,7 @@ class HTTPRouteHandler(BaseRouteHandler):
         messages = _decode_msgpack_plain(cached_response_data)
 
         async def cached_response(scope: Scope, receive: Receive, send: Send) -> None:
-            ScopeState.from_scope(scope).is_cached = True
-            for message in messages:
-                await send(message)
+            pass
 
         return cached_response
 

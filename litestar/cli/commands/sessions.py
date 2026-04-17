@@ -38,26 +38,10 @@ def sessions_group() -> None:
 @click.argument("session-id")
 def delete_session_command(session_id: str, app: Litestar) -> None:
     """Delete a specific session."""
-    import anyio
-
-    backend = get_session_backend(app)
-    store = backend.config.get_store_from_app(app)
-
-    if Confirm.ask(f"Delete session {session_id!r}?"):
-        anyio.run(backend.delete, session_id, store)
-        console.print(f"[green]Deleted session {session_id!r}")
+    pass
 
 
 @sessions_group.command("clear")  # type: ignore[untyped-decorator]
 def clear_sessions_command(app: Litestar) -> None:
     """Delete all sessions."""
-    import anyio
-
-    backend = get_session_backend(app)
-    store = backend.config.get_store_from_app(app)
-    if not hasattr(store, "delete_all"):
-        raise LitestarCLIException(f"{type(store)} does not support clearing all sessions")
-
-    if Confirm.ask("[red]Delete all sessions?"):
-        anyio.run(store.delete_all)
-        console.print("[green]All active sessions deleted")
+    pass

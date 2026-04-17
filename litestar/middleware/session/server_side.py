@@ -62,8 +62,7 @@ class ServerSideSessionBackend(BaseSessionBackend["ServerSideSessionConfig"]):
         Returns:
             None
         """
-        expires_in = int(self.config.max_age) if self.config.max_age is not None else None
-        await store.set(session_id, data, expires_in=expires_in)
+        pass
 
     async def delete(self, session_id: str, store: Store) -> None:
         """Delete the data associated with ``session_id``. Fails silently if no such session-ID exists.

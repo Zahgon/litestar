@@ -93,43 +93,11 @@ class URL:
     @classmethod
     @lru_cache
     def _new(cls, url: str | SplitResult) -> URL:
-        instance = super().__new__(cls)
-        instance._parsed_url = None
-
-        if isinstance(url, str):
-            result = urlsplit(url)
-            instance._parsed_url = url
-        else:
-            result = url
-
-        instance.scheme = result.scheme
-        instance.netloc = result.netloc
-        instance.path = result.path
-        instance.fragment = result.fragment
-        instance.query = result.query
-        instance.username = result.username
-        instance.password = result.password
-        instance.port = result.port
-        instance.hostname = result.hostname
-        instance._query_params = Empty
-
-        return instance
+        pass
 
     @property
     def _url(self) -> str:
-        if not self._parsed_url:
-            self._parsed_url = str(
-                urlunsplit(
-                    SplitResult(
-                        scheme=self.scheme,
-                        netloc=self.netloc,
-                        path=self.path,
-                        fragment=self.fragment,
-                        query=self.query,
-                    )
-                )
-            )
-        return self._parsed_url
+        pass
 
     @classmethod
     @lru_cache
@@ -220,18 +188,7 @@ class URL:
         Returns:
             A new URL with the given components replaced
         """
-        if isinstance(query, MultiDict):
-            query = urlencode(query=query)
-
-        query = (query if query is not Empty else self.query) or ""
-
-        return type(self).from_components(
-            scheme=scheme or self.scheme,
-            netloc=netloc or self.netloc,
-            path=path or self.path,
-            query=query,
-            fragment=fragment or self.fragment,
-        )
+        pass
 
     @property
     def query_params(self) -> MultiDict:
@@ -246,9 +203,7 @@ class URL:
                 If you want to modify query parameters, make  modifications in the
                 multidict and pass them back to :meth:`with_replacements`
         """
-        if self._query_params is Empty:
-            self._query_params = MultiDict(parse_query_string(query_string=self.query.encode()))
-        return self._query_params
+        pass
 
     def __str__(self) -> str:
         return self._url

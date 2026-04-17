@@ -140,7 +140,7 @@ class ImmutableState(Mapping[str, Any]):
         Returns:
             A ``State``
         """
-        return State(self._state, deep_copy=self._deep_copy)
+        pass
 
     def dict(self) -> dict[str, Any]:
         """Return a shallow copy of the wrapped dict.
@@ -148,7 +148,7 @@ class ImmutableState(Mapping[str, Any]):
         Returns:
             A dict
         """
-        return {k: v for k, v in self._state.items() if k != CONNECTION_STATE_KEY}
+        pass
 
     @classmethod
     def __get_validators__(
@@ -168,8 +168,7 @@ class ImmutableState(Mapping[str, Any]):
         Returns:
             An ImmutableState instance
         """
-        deep_copy = value._deep_copy if isinstance(value, ImmutableState) else False
-        return cls(value, deep_copy=deep_copy)
+        pass
 
 
 class State(ImmutableState, MutableMapping[str, Any]):
@@ -315,4 +314,4 @@ class State(ImmutableState, MutableMapping[str, Any]):
         Returns:
             A ``State``
         """
-        return ImmutableState(self, deep_copy=self._deep_copy)
+        pass

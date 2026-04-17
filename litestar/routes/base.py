@@ -23,22 +23,19 @@ if TYPE_CHECKING:
 
 
 def _parse_datetime(value: str) -> datetime:
-    return msgspec.convert(value, datetime)
+    pass
 
 
 def _parse_date(value: str) -> date:
-    return msgspec.convert(value, date)
+    pass
 
 
 def _parse_time(value: str) -> time:
-    return msgspec.convert(value, time)
+    pass
 
 
 def _parse_timedelta(value: str) -> timedelta:
-    try:
-        return msgspec.convert(value, timedelta)
-    except msgspec.ValidationError:
-        return timedelta(seconds=int(float(value)))
+    pass
 
 
 param_match_regex = re.compile(r"{(.*?)}")
@@ -119,17 +116,7 @@ class BaseRoute(ABC, Generic[ScopeT]):
         Raises:
             ImproperlyConfiguredException: If the parameter has an invalid format.
         """
-        if len(param.split(":")) != 2:
-            raise ImproperlyConfiguredException(
-                f"Path parameters should be declared with a type using the following pattern: '{{parameter_name:type}}', e.g. '/my-path/{{my_param:int}}' in path: '{path}'"
-            )
-        param_name, param_type = (p.strip() for p in param.split(":"))
-        if not param_name:
-            raise ImproperlyConfiguredException("Path parameter names should be of length greater than zero")
-        if param_type not in param_type_map:
-            raise ImproperlyConfiguredException(
-                f"Path parameters should be declared with an allowed type, i.e. one of {', '.join(param_type_map.keys())} in path: '{path}'"
-            )
+        pass
 
     @classmethod
     def _parse_path(
@@ -143,30 +130,4 @@ class BaseRoute(ABC, Generic[ScopeT]):
         Returns:
             A 3-tuple of the normalized path, the OpenAPI formatted path, and the list of parsed components.
         """
-        path = normalize_path(path)
-
-        parsed_components: list[str | PathParameterDefinition] = []
-        path_format_components = []
-        path_parameters: dict[str, PathParameterDefinition] = {}
-
-        components = [component for component in path.split("/") if component]
-        for component in components:
-            if param_match := param_match_regex.fullmatch(component):
-                param = param_match.group(1)
-                cls._validate_path_parameter(param, path)
-                param_name, param_type = (p.strip() for p in param.split(":"))
-                type_class = param_type_map[param_type]
-                parser = parsers_map[type_class] if type_class not in {str, Path} else None
-                if param_name in path_parameters:
-                    raise ImproperlyConfiguredException(f"Duplicate parameter '{param_name}' detected in '{path}'.")
-                param_definition = PathParameterDefinition(name=param_name, type=type_class, full=param, parser=parser)
-                parsed_components.append(param_definition)
-                path_parameters[param_name] = param_definition
-                path_format_components.append("{" + param_name + "}")
-            else:
-                parsed_components.append(component)
-                path_format_components.append(component)
-
-        path_format = join_paths(path_format_components)
-
-        return path, path_format, parsed_components, path_parameters
+        pass

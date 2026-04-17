@@ -136,62 +136,10 @@ class DTOBackend:
         Returns:
         Fields for data transfer.
         """
-        defined_fields = []
-        generic_field_definitions = list(FieldDefinition.from_annotation(model_type).generic_types or ())
-        for field_definition in self.dto_factory.generate_field_definitions(model_type):
-            if field_definition.is_type_var:
-                base_arg_field = generic_field_definitions.pop()
-                field_definition = replace(
-                    field_definition, annotation=base_arg_field.annotation, raw=base_arg_field.raw
-                )
-
-            if _should_mark_private(field_definition, self.dto_factory.config.underscore_fields_private):
-                field_definition.dto_field.mark = Mark.PRIVATE
-
-            try:
-                transfer_type = self._create_transfer_type(
-                    field_definition=field_definition,
-                    exclude=exclude,
-                    include=include,
-                    rename_fields=rename_fields,
-                    field_name=field_definition.name,
-                    unique_name=field_definition.model_name,
-                    nested_depth=nested_depth,
-                )
-            except RecursionError:
-                continue
-
-            transfer_field_definition = TransferDTOFieldDefinition.from_dto_field_definition(
-                field_definition=field_definition,
-                serialization_name=rename_fields.get(field_definition.name),
-                transfer_type=transfer_type,
-                is_partial=self.dto_factory.config.partial,
-                is_excluded=_should_exclude_field(
-                    field_definition=field_definition,
-                    exclude=exclude,
-                    include=include,
-                    is_data_field=self.is_data_field,
-                ),
-            )
-            defined_fields.append(transfer_field_definition)
-        return tuple(defined_fields)
+        pass
 
     def _create_transfer_model_name(self, model_name: str) -> str:
-        long_name_prefix = self.handler_id.split("::")[0]
-        short_name_prefix = _camelize(long_name_prefix.split(".")[-1], True)
-
-        name_suffix = "RequestBody" if self.is_data_field else "ResponseBody"
-
-        if (short_name := f"{short_name_prefix}{model_name}{name_suffix}") not in self._seen_model_names:
-            name = short_name
-        elif (long_name := f"{long_name_prefix}{model_name}{name_suffix}") not in self._seen_model_names:
-            name = long_name
-        else:
-            name = unique_name_for_scope(long_name, self._seen_model_names)
-
-        self._seen_model_names.add(name)
-
-        return name
+        pass
 
     def create_transfer_model_type(
         self,
@@ -207,25 +155,7 @@ class DTOBackend:
         Returns:
             A ``BackendT`` class.
         """
-        # Only apply the custom __schema_name__ to the root transfer model.
-        # Nested models get their own generated name to avoid child $refs
-        # pointing to the parent's schema.
-        # model_name only equals model_type.__name__ for the root model.
-        # Nested models have a different name, so __schema_name__ won't
-        # override their generated schema name.
-        if model_name == self.model_type.__name__ and self.dto_factory.__schema_name__:
-            struct_name = self.dto_factory.__schema_name__
-        else:
-            struct_name = self._create_transfer_model_name(model_name)
-
-        struct = _create_struct_for_field_definitions(
-            model_name=struct_name,
-            field_definitions=field_definitions,
-            rename_strategy=self.dto_factory.config.rename_strategy,
-            forbid_unknown_fields=self.dto_factory.config.forbid_unknown_fields,
-        )
-        setattr(struct, "__schema_name__", struct_name)
-        return struct
+        pass
 
     def parse_raw(self, raw: bytes, asgi_connection: ASGIConnection) -> Struct | Collection[Struct]:
         """Parse raw bytes into transfer model type.
@@ -380,20 +310,7 @@ class DTOBackend:
         )
 
     def _get_handler_for_field_definition(self, field_definition: FieldDefinition) -> CompositeTypeHandler | None:
-        if field_definition.is_union:
-            return self._create_union_type
-
-        if field_definition.is_tuple:
-            if len(field_definition.inner_types) == 2 and field_definition.inner_types[1].annotation is Ellipsis:
-                return self._create_collection_type
-            return self._create_tuple_type
-
-        if field_definition.is_mapping:
-            return self._create_mapping_type
-
-        if field_definition.is_non_string_collection:
-            return self._create_collection_type
-        return None
+        pass
 
     def _create_transfer_type(
         self,
@@ -405,42 +322,7 @@ class DTOBackend:
         unique_name: str,
         nested_depth: int,
     ) -> CompositeType | SimpleType:
-        exclude = _filter_nested_field(exclude, field_name)
-        include = _filter_nested_field(include, field_name)
-        rename_fields = _filter_nested_field_mapping(rename_fields, field_name)
-
-        if composite_type_handler := self._get_handler_for_field_definition(field_definition):
-            return composite_type_handler(
-                field_definition=field_definition,
-                exclude=exclude,
-                include=include,
-                rename_fields=rename_fields,
-                unique_name=unique_name,
-                nested_depth=nested_depth,
-            )
-
-        transfer_model: NestedFieldInfo | None = None
-
-        if self.dto_factory.detect_nested_field(field_definition):
-            if nested_depth == self.dto_factory.config.max_nested_depth:
-                raise RecursionError
-
-            unique_name = f"{unique_name}{field_definition.raw.__name__}"
-
-            nested_field_definitions = self.parse_model(
-                model_type=field_definition.annotation,
-                exclude=exclude,
-                include=include,
-                rename_fields=rename_fields,
-                nested_depth=nested_depth + 1,
-            )
-
-            transfer_model = NestedFieldInfo(
-                model=self.create_transfer_model_type(unique_name, nested_field_definitions),
-                field_definitions=nested_field_definitions,
-            )
-
-        return SimpleType(field_definition, nested_field_info=transfer_model)
+        pass
 
     def _create_collection_type(
         self,
@@ -451,19 +333,7 @@ class DTOBackend:
         unique_name: str,
         nested_depth: int,
     ) -> CollectionType:
-        inner_types = field_definition.inner_types
-        inner_type = self._create_transfer_type(
-            field_definition=inner_types[0] if inner_types else FieldDefinition.from_annotation(Any),
-            exclude=exclude,
-            include=include,
-            field_name="0",
-            unique_name=f"{unique_name}_0",
-            nested_depth=nested_depth,
-            rename_fields=rename_fields,
-        )
-        return CollectionType(
-            field_definition=field_definition, inner_type=inner_type, has_nested=inner_type.has_nested
-        )
+        pass
 
     def _create_mapping_type(
         self,
@@ -474,31 +344,7 @@ class DTOBackend:
         unique_name: str,
         nested_depth: int,
     ) -> MappingType:
-        inner_types = field_definition.inner_types
-        key_type = self._create_transfer_type(
-            field_definition=inner_types[0] if inner_types else FieldDefinition.from_annotation(Any),
-            exclude=exclude,
-            include=include,
-            field_name="0",
-            unique_name=f"{unique_name}_0",
-            nested_depth=nested_depth,
-            rename_fields=rename_fields,
-        )
-        value_type = self._create_transfer_type(
-            field_definition=inner_types[1] if inner_types else FieldDefinition.from_annotation(Any),
-            exclude=exclude,
-            include=include,
-            field_name="1",
-            unique_name=f"{unique_name}_1",
-            nested_depth=nested_depth,
-            rename_fields=rename_fields,
-        )
-        return MappingType(
-            field_definition=field_definition,
-            key_type=key_type,
-            value_type=value_type,
-            has_nested=key_type.has_nested or value_type.has_nested,
-        )
+        pass
 
     def _create_tuple_type(
         self,
@@ -509,23 +355,7 @@ class DTOBackend:
         unique_name: str,
         nested_depth: int,
     ) -> TupleType:
-        inner_types = tuple(
-            self._create_transfer_type(
-                field_definition=inner_type,
-                exclude=exclude,
-                include=include,
-                field_name=str(i),
-                unique_name=f"{unique_name}_{i}",
-                nested_depth=nested_depth,
-                rename_fields=rename_fields,
-            )
-            for i, inner_type in enumerate(field_definition.inner_types)
-        )
-        return TupleType(
-            field_definition=field_definition,
-            inner_types=inner_types,
-            has_nested=any(t.has_nested for t in inner_types),
-        )
+        pass
 
     def _create_union_type(
         self,
@@ -536,44 +366,21 @@ class DTOBackend:
         unique_name: str,
         nested_depth: int,
     ) -> UnionType:
-        inner_types = tuple(
-            self._create_transfer_type(
-                field_definition=inner_type,
-                exclude=exclude,
-                include=include,
-                field_name=str(i),
-                unique_name=f"{unique_name}_{i}",
-                nested_depth=nested_depth,
-                rename_fields=rename_fields,
-            )
-            for i, inner_type in enumerate(field_definition.inner_types)
-        )
-        return UnionType(
-            field_definition=field_definition,
-            inner_types=inner_types,
-            has_nested=any(t.has_nested for t in inner_types),
-        )
+        pass
 
 
 def _camelize(value: str, capitalize_first_letter: bool) -> str:
-    return "".join(
-        word if index == 0 and not capitalize_first_letter else word.capitalize()
-        for index, word in enumerate(value.split("_"))
-    )
+    pass
 
 
 def _filter_nested_field(field_name_set: Set[str], field_name: str) -> Set[str]:
     """Filter a nested field name."""
-    return {split[1] for s in field_name_set if (split := s.split(".", 1))[0] == field_name and len(split) > 1}
+    pass
 
 
 def _filter_nested_field_mapping(field_name_mapping: Mapping[str, str], field_name: str) -> dict[str, str]:
     """Filter a nested field name."""
-    return {
-        split[1]: v
-        for s, v in field_name_mapping.items()
-        if (split := s.split(".", 1))[0] == field_name and len(split) > 1
-    }
+    pass
 
 
 def _transfer_data(
@@ -781,20 +588,7 @@ def _transfer_nested_union_type_data(
 
 
 def _create_msgspec_field(field_definition: TransferDTOFieldDefinition) -> Any:
-    kwargs: dict[str, Any] = {}
-    if field_definition.is_partial:
-        kwargs["default"] = UNSET
-
-    elif field_definition.default is not Empty:
-        kwargs["default"] = field_definition.default
-
-    elif field_definition.default_factory is not None:
-        kwargs["default_factory"] = field_definition.default_factory
-
-    if field_definition.serialization_name is not None:
-        kwargs["name"] = field_definition.serialization_name
-
-    return field(**kwargs)
+    pass
 
 
 def _create_struct_field_meta_for_field_definition(field_definition: TransferDTOFieldDefinition) -> msgspec.Meta | None:
@@ -825,37 +619,7 @@ def _create_struct_for_field_definitions(
     rename_strategy: RenameStrategy | dict[str, str] | None,
     forbid_unknown_fields: bool,
 ) -> type[Struct]:
-    struct_fields: list[tuple[str, type] | tuple[str, type, type]] = []
-
-    for field_definition in field_definitions:
-        if field_definition.is_excluded:
-            continue
-
-        field_type = _create_transfer_model_type_annotation(field_definition.transfer_type)
-        if field_definition.is_partial:
-            field_type = Union[field_type, UnsetType]
-
-        if field_definition.passthrough_constraints:
-            if (field_meta := _create_struct_field_meta_for_field_definition(field_definition)) is not None:
-                field_type = Annotated[field_type, field_meta]
-        elif field_definition.kwarg_definition:
-            field_type = Annotated[field_type, field_definition.kwarg_definition]
-
-        struct_fields.append(
-            (  # pyright: ignore[reportArgumentType]
-                field_definition.name,
-                field_type,
-                _create_msgspec_field(field_definition),
-            )
-        )
-    return defstruct(
-        model_name,
-        struct_fields,
-        frozen=True,
-        kw_only=True,
-        rename=rename_strategy,
-        forbid_unknown_fields=forbid_unknown_fields,
-    )
+    pass
 
 
 def build_annotation_for_backend(
@@ -871,17 +635,7 @@ def build_annotation_for_backend(
     Returns:
         Annotation with new inner type if applicable.
     """
-    if not field_definition.inner_types:
-        if field_definition.is_subclass_of(model_type):
-            return transfer_model
-        return field_definition.annotation
-
-    inner_types = tuple(
-        build_annotation_for_backend(model_type, inner_type, transfer_model)
-        for inner_type in field_definition.inner_types
-    )
-
-    return field_definition.safe_generic_origin[inner_types]
+    pass
 
 
 def _should_mark_private(field_definition: DTOFieldDefinition, underscore_fields_private: bool) -> bool:
@@ -915,16 +669,7 @@ def _should_exclude_field(
     Returns:
         ``True`` if the field should not be included in any data transfer.
     """
-    field_name = field_definition.name
-    if field_name in exclude:
-        return True
-    if include and field_name not in include and not (any(f.startswith(f"{field_name}.") for f in include)):
-        return True
-    if field_definition.dto_field.mark is Mark.PRIVATE:
-        return True
-    if is_data_field and field_definition.dto_field.mark is Mark.READ_ONLY:
-        return True
-    return not is_data_field and field_definition.dto_field.mark is Mark.WRITE_ONLY
+    pass
 
 
 def _create_transfer_model_type_annotation(transfer_type: TransferType) -> Any:

@@ -78,7 +78,7 @@ class InitPluginProtocol(Protocol):
         Returns:
             The app config object.
         """
-        return app_config  # pragma: no cover
+        pass
 
 
 class InitPlugin(InitPluginProtocol):
@@ -121,7 +121,7 @@ class InitPlugin(InitPluginProtocol):
         Returns:
             The app config object.
         """
-        return app_config  # pragma: no cover
+        pass
 
 
 class ReceiveRoutePlugin:
@@ -164,7 +164,7 @@ class CLIPlugin:
 
     @contextmanager
     def server_lifespan(self, app: Litestar) -> Iterator[None]:
-        yield
+        pass
 
 
 class SerializationPlugin(abc.ABC):

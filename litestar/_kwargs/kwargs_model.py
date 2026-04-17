@@ -129,60 +129,7 @@ class KwargsModel:
         self.dependency_batches = create_dependency_batches(expected_dependencies)
 
     def _create_extractors(self) -> list[Extractor]:
-        reserved_kwargs_extractors: dict[str, Extractor] = {
-            "data": create_data_extractor(self),
-            "state": state_extractor,
-            "scope": scope_extractor,
-            "request": request_extractor,
-            "socket": socket_extractor,
-            "headers": headers_extractor,
-            "cookies": cookies_extractor,
-            "query": query_extractor,
-            "body": body_extractor,  # type: ignore[dict-item]
-        }
-
-        extractors: list[Extractor] = [
-            reserved_kwargs_extractors[reserved_kwarg] for reserved_kwarg in self.expected_reserved_kwargs
-        ]
-
-        if self.expected_header_params:
-            extractors.append(
-                create_connection_value_extractor(
-                    connection_key="headers",
-                    expected_params=self.expected_header_params,
-                    kwargs_model=self,
-                    parser=parse_connection_headers,
-                ),
-            )
-
-        if self.expected_path_params:
-            extractors.append(
-                create_connection_value_extractor(
-                    connection_key="path_params",
-                    expected_params=self.expected_path_params,
-                    kwargs_model=self,
-                ),
-            )
-
-        if self.expected_cookie_params:
-            extractors.append(
-                create_connection_value_extractor(
-                    connection_key="cookies",
-                    expected_params=self.expected_cookie_params,
-                    kwargs_model=self,
-                ),
-            )
-
-        if self.expected_query_params:
-            extractors.append(
-                create_connection_value_extractor(
-                    connection_key="query_params",
-                    expected_params=self.expected_query_params,
-                    kwargs_model=self,
-                    parser=parse_connection_query_params,
-                ),
-            )
-        return extractors
+        pass
 
     @classmethod
     def _get_param_definitions(

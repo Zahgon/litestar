@@ -58,9 +58,7 @@ class FileStore(NamespacedStore):
 
     def with_namespace(self, namespace: str) -> FileStore:
         """Return a new instance of :class:`FileStore`, using  a sub-path of the current store's path."""
-        if not namespace.isalnum():
-            raise ValueError(f"Invalid namespace: {namespace!r}")
-        return FileStore(self.path / namespace)
+        pass
 
     def _path_from_key(self, key: str) -> Path:
         return self.path / _safe_file_name(key)
@@ -74,25 +72,10 @@ class FileStore(NamespacedStore):
             return None
 
     def _write_sync(self, target_file: Path, storage_obj: StorageObject) -> None:
-        try:
-            tmp_file_fd, tmp_file_name = mkstemp(dir=self.path, prefix=f"{target_file.name}.tmp")
-            renamed = False
-            try:
-                try:
-                    os.write(tmp_file_fd, storage_obj.to_bytes())
-                finally:
-                    os.close(tmp_file_fd)
-
-                os.replace(tmp_file_name, target_file)  # noqa: PTH105
-                renamed = True
-            finally:
-                if not renamed:
-                    os.unlink(tmp_file_name)  # noqa: PTH108
-        except OSError:
-            pass
+        pass
 
     async def _write(self, target_file: Path, storage_obj: StorageObject) -> None:
-        await sync_to_thread(self._write_sync, target_file, storage_obj)
+        pass
 
     async def set(self, key: str, value: str | bytes, expires_in: int | timedelta | None = None) -> None:
         """Set a value.
@@ -105,13 +88,7 @@ class FileStore(NamespacedStore):
         Returns:
             ``None``
         """
-
-        await self.path.mkdir(exist_ok=True)
-        path = self._path_from_key(key)
-        if isinstance(value, str):
-            value = value.encode("utf-8")
-        storage_obj = StorageObject.new(data=value, expires_in=expires_in)
-        await self._write(path, storage_obj)
+        pass
 
     async def get(self, key: str, renew_for: int | timedelta | None = None) -> bytes | None:
         """Get a value.
@@ -158,9 +135,7 @@ class FileStore(NamespacedStore):
         Note:
             This deletes and recreates :attr:`FileStore.path`
         """
-
-        await sync_to_thread(shutil.rmtree, self.path)
-        await self.path.mkdir(exist_ok=True)
+        pass
 
     async def delete_expired(self) -> None:
         """Delete expired items.
@@ -169,10 +144,7 @@ class FileStore(NamespacedStore):
         :meth:`.get`), this method should be called in regular intervals
         to free disk space.
         """
-        async for file in self.path.iterdir():
-            wrapper = await self._load_from_path(file)
-            if wrapper and wrapper.expired:
-                await file.unlink(missing_ok=True)
+        pass
 
     async def exists(self, key: str) -> bool:
         """Check if a given ``key`` exists."""
@@ -183,6 +155,4 @@ class FileStore(NamespacedStore):
         """Get the time in seconds ``key`` expires in. If no such ``key`` exists or no
         expiry time was set, return ``None``.
         """
-        if storage_obj := await self._load_from_path(self._path_from_key(key)):
-            return storage_obj.expires_in
-        return None
+        pass

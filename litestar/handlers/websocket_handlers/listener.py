@@ -239,34 +239,10 @@ class WebsocketListenerRouteHandler(WebsocketRouteHandler):
         return merge_opts
 
     def on_registration(self, route: BaseRoute, app: Litestar) -> None:
-        self.fn = self._prepare_fn()
-        super().on_registration(route, app)
+        pass
 
     def _prepare_fn(self) -> ListenerHandler:
-        parsed_signature = ParsedSignature.from_fn(self.fn, self.signature_namespace)
-
-        if "data" not in parsed_signature.parameters:
-            raise ImproperlyConfiguredException("Websocket listeners must accept a 'data' parameter")
-
-        for param in ("request", "body"):
-            if param in parsed_signature.parameters:
-                raise ImproperlyConfiguredException(f"The {param} kwarg is not supported with websocket listeners")
-
-        # we are manipulating the signature of the decorated function below, so we must store the original values for
-        # use elsewhere.
-        self._parsed_return_field = parsed_signature.return_type
-        self._parsed_data_field = parsed_signature.parameters.get("data")
-        self._parsed_fn_signature = ParsedSignature.from_signature(
-            create_handler_signature(parsed_signature.original_signature),
-            fn_type_hints={
-                **get_fn_type_hints(self.fn, namespace=self.signature_namespace),
-                **get_fn_type_hints(ListenerHandler.__call__, namespace=self.signature_namespace),
-            },
-        )
-
-        return ListenerHandler(
-            listener=self, fn=self.fn, parsed_signature=parsed_signature, namespace=self.signature_namespace
-        )
+        pass
 
     def _validate_handler_function(self) -> None:
         """Validate the route handler function once it's set by inspecting its return annotations."""
@@ -292,28 +268,13 @@ class WebsocketListenerRouteHandler(WebsocketRouteHandler):
             - Call :attr:`on_accept` if defined after a connection has been accepted
             - Call :attr:`on_disconnect` upon leaving the context
         """
-        await self.connection_accept_handler(socket)
-
-        if self.on_accept:
-            await self.on_accept(**(on_accept_dependencies or {}))
-
-        try:
-            yield
-        except WebSocketDisconnect:
-            pass
-        finally:
-            if self.on_disconnect:
-                await self.on_disconnect(**(on_disconnect_dependencies or {}))
+        pass
 
     def resolve_receive_handler(self) -> Callable[[WebSocket], Any]:
-        if self._receive_handler is Empty:
-            self._receive_handler = create_handle_receive(self)
-        return self._receive_handler
+        pass
 
     def resolve_send_handler(self) -> Callable[[WebSocket, Any], Coroutine[None, None, None]]:
-        if self._send_handler is Empty:
-            self._send_handler = create_handle_send(self)
-        return self._send_handler
+        pass
 
 
 class WebsocketListener(ABC):
@@ -362,29 +323,7 @@ class WebsocketListener(ABC):
     """
 
     def to_handler(self) -> WebsocketListenerRouteHandler:
-        on_accept = self.on_accept if self.on_accept != WebsocketListener.on_accept else None
-        on_disconnect = self.on_disconnect if self.on_disconnect != WebsocketListener.on_disconnect else None
-
-        return WebsocketListenerRouteHandler(
-            dependencies=self.dependencies,
-            dto=self.dto,
-            exception_handlers=self.exception_handlers,
-            guards=self.guards,
-            middleware=self.middleware,
-            send_mode=self.send_mode,
-            receive_mode=self.receive_mode,
-            name=self.name,
-            on_accept=on_accept,
-            on_disconnect=on_disconnect,
-            opt=self.opt,
-            path=self.path,
-            return_dto=self.return_dto,
-            signature_namespace=self.signature_namespace,
-            type_decoders=self.type_decoders,
-            type_encoders=self.type_encoders,
-            websocket_class=self.websocket_class,
-            fn=self.on_receive,
-        )
+        pass
 
     def on_accept(self, *args: Any, **kwargs: Any) -> Any:
         """Called after a :class:`WebSocket <.connection.WebSocket>` connection

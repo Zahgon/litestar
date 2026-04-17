@@ -80,8 +80,7 @@ class ValkeyStore(NamespacedStore):
         )
 
     async def _shutdown(self) -> None:
-        if self.handle_client_shutdown:
-            await self._valkey.aclose(close_connection_pool=True)
+        pass
 
     async def __aexit__(
         self,
@@ -112,30 +111,14 @@ class ValkeyStore(NamespacedStore):
             password: Valkey password to use
             namespace: Virtual key namespace to use
         """
-        pool: ConnectionPool = ConnectionPool.from_url(
-            url=url,
-            db=db,
-            decode_responses=False,
-            port=port,
-            username=username,
-            password=password,
-        )
-        return cls(
-            valkey=Valkey(connection_pool=pool),
-            namespace=namespace,
-            handle_client_shutdown=True,
-        )
+        pass
 
     def with_namespace(self, namespace: str) -> ValkeyStore:
         """Return a new :class:`ValkeyStore` with a nested virtual key namespace.
         The current instances namespace will serve as a prefix for the namespace, so it
         can be considered the parent namespace.
         """
-        return type(self)(
-            valkey=self._valkey,
-            namespace=f"{self.namespace}_{namespace}" if self.namespace else namespace,
-            handle_client_shutdown=self.handle_client_shutdown,
-        )
+        pass
 
     def _make_key(self, key: str) -> str:
         prefix = f"{self.namespace}:" if self.namespace else ""
@@ -152,9 +135,7 @@ class ValkeyStore(NamespacedStore):
         Returns:
             ``None``
         """
-        if isinstance(value, str):
-            value = value.encode("utf-8")
-        await self._valkey.set(self._make_key(key), value, ex=expires_in)
+        pass
 
     async def get(self, key: str, renew_for: int | timedelta | None = None) -> bytes | None:
         """Get a value.
@@ -195,10 +176,7 @@ class ValkeyStore(NamespacedStore):
         Raises:
             ImproperlyConfiguredException: If no namespace was configured
         """
-        if not self.namespace:
-            raise ImproperlyConfiguredException("Cannot perform delete operation: No namespace configured")
-
-        await self._delete_all_script(keys=[], args=[f"{self.namespace}*:*"])
+        pass
 
     async def exists(self, key: str) -> bool:
         """Check if a given ``key`` exists."""
@@ -208,5 +186,4 @@ class ValkeyStore(NamespacedStore):
         """Get the time in seconds ``key`` expires in. If no such ``key`` exists or no
         expiry time was set, return ``None``.
         """
-        ttl = await self._valkey.ttl(self._make_key(key))
-        return None if ttl == -2 else ttl
+        pass

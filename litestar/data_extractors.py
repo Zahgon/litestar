@@ -191,7 +191,7 @@ class ConnectionDataExtractor:
         Returns:
             The connection's scope["scheme"] value
         """
-        return connection.scope["scheme"]
+        pass
 
     @staticmethod
     def extract_client(connection: ASGIConnection[Any, Any, Any, Any]) -> tuple[str, int]:
@@ -203,7 +203,7 @@ class ConnectionDataExtractor:
         Returns:
             The connection's scope["client"] value or a default value.
         """
-        return connection.scope.get("client") or ("", 0)
+        pass
 
     @staticmethod
     def extract_path(connection: ASGIConnection[Any, Any, Any, Any]) -> str:
@@ -215,7 +215,7 @@ class ConnectionDataExtractor:
         Returns:
             The connection's scope["path"] value
         """
-        return connection.scope["path"]
+        pass
 
     def extract_headers(self, connection: ASGIConnection[Any, Any, Any, Any]) -> dict[str, str]:
         """Extract headers from an ``ASGIConnection``
@@ -226,8 +226,7 @@ class ConnectionDataExtractor:
         Returns:
             A dictionary with the connection's headers.
         """
-        headers = {k.decode("latin-1"): v.decode("latin-1") for k, v in connection.scope["headers"]}
-        return _obfuscate(headers, self.obfuscate_headers) if self.obfuscate_headers else headers
+        pass
 
     def extract_cookies(self, connection: ASGIConnection[Any, Any, Any, Any]) -> dict[str, str]:
         """Extract cookies from an ``ASGIConnection``
@@ -249,7 +248,7 @@ class ConnectionDataExtractor:
         Returns:
             Either a dictionary with the connection's parsed query string or the raw query byte-string.
         """
-        return connection.query_params.dict() if self.parse_query else connection.scope.get("query_string", b"")
+        pass
 
     @staticmethod
     def extract_path_params(connection: ASGIConnection[Any, Any, Any, Any]) -> dict[str, Any]:
@@ -261,7 +260,7 @@ class ConnectionDataExtractor:
         Returns:
             A dictionary with the connection's path parameters.
         """
-        return connection.path_params
+        pass
 
     @staticmethod
     def extract_method(request: Request[Any, Any, Any]) -> Method:
@@ -273,7 +272,7 @@ class ConnectionDataExtractor:
         Returns:
             The request's scope["method"] value.
         """
-        return request.scope["method"]
+        pass
 
     @staticmethod
     def extract_content_type(request: Request[Any, Any, Any]) -> tuple[str, dict[str, str]]:
@@ -285,7 +284,7 @@ class ConnectionDataExtractor:
         Returns:
             A tuple containing the request's parsed 'Content-Type' header.
         """
-        return request.content_type
+        pass
 
     async def extract_body(self, request: Request[Any, Any, Any]) -> Any:
         """Extract the body from an ``ASGIConnection``
@@ -296,24 +295,7 @@ class ConnectionDataExtractor:
         Returns:
             Either the parsed request body or the raw byte-string.
         """
-        if request.method == HttpMethod.GET:
-            return None
-        if not self.parse_body:
-            return await request.body()
-        try:
-            request_encoding_type = request.content_type[0]
-            if request_encoding_type == RequestEncodingType.JSON:
-                return await request.json()
-            form_data = await request.form()
-            if request_encoding_type == RequestEncodingType.URL_ENCODED:
-                return dict(form_data)
-            return {
-                key: repr(value) if isinstance(value, UploadFile) else value for key, value in form_data.multi_items()
-            }
-        except Exception as exc:
-            if self.skip_parse_malformed_body:
-                return await request.body()
-            raise exc
+        pass
 
 
 class ExtractedResponseData(TypedDict, total=False):
@@ -388,7 +370,7 @@ class ResponseDataExtractor:
         Returns:
             The Response's body as a byte-string.
         """
-        return messages[1]["body"]
+        pass
 
     @staticmethod
     def extract_status_code(messages: tuple[HTTPResponseStartEvent, HTTPResponseBodyEvent]) -> int:
@@ -402,7 +384,7 @@ class ResponseDataExtractor:
         Returns:
             The Response's status-code.
         """
-        return messages[0]["status"]
+        pass
 
     def extract_headers(self, messages: tuple[HTTPResponseStartEvent, HTTPResponseBodyEvent]) -> dict[str, str]:
         """Extract headers from a ``Message``
@@ -415,18 +397,7 @@ class ResponseDataExtractor:
         Returns:
             The Response's headers dict.
         """
-        headers = {
-            key.decode("latin-1"): value.decode("latin-1")
-            for key, value in filter(lambda x: x[0].lower() != b"set-cookie", messages[0]["headers"])
-        }
-        return (
-            _obfuscate(
-                headers,
-                self.obfuscate_headers,
-            )
-            if self.obfuscate_headers
-            else headers
-        )
+        pass
 
     def extract_cookies(self, messages: tuple[HTTPResponseStartEvent, HTTPResponseBodyEvent]) -> dict[str, str]:
         """Extract cookies from a ``Message``

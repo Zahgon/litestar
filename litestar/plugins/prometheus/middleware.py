@@ -49,51 +49,16 @@ class PrometheusMiddleware(AbstractMiddleware):
             self._kwargs["buckets"] = self._config.buckets
 
     def request_count(self, labels: dict[str, str | int | float]) -> Counter:
-        metric_name = f"{self._config.prefix}_requests_total"
-
-        if metric_name not in PrometheusMiddleware._metrics:
-            PrometheusMiddleware._metrics[metric_name] = Counter(
-                name=metric_name,
-                documentation="Total requests",
-                labelnames=[*labels.keys()],
-            )
-
-        return cast("Counter", PrometheusMiddleware._metrics[metric_name])
+        pass
 
     def request_time(self, labels: dict[str, str | int | float]) -> Histogram:
-        metric_name = f"{self._config.prefix}_request_duration_seconds"
-
-        if metric_name not in PrometheusMiddleware._metrics:
-            PrometheusMiddleware._metrics[metric_name] = Histogram(
-                name=metric_name,
-                documentation="Request duration, in seconds",
-                labelnames=[*labels.keys()],
-                **self._kwargs,
-            )
-        return cast("Histogram", PrometheusMiddleware._metrics[metric_name])
+        pass
 
     def requests_in_progress(self, labels: dict[str, str | int | float]) -> Gauge:
-        metric_name = f"{self._config.prefix}_requests_in_progress"
-
-        if metric_name not in PrometheusMiddleware._metrics:
-            PrometheusMiddleware._metrics[metric_name] = Gauge(
-                name=metric_name,
-                documentation="Total requests currently in progress",
-                labelnames=[*labels.keys()],
-                multiprocess_mode="livesum",
-            )
-        return cast("Gauge", PrometheusMiddleware._metrics[metric_name])
+        pass
 
     def requests_error_count(self, labels: dict[str, str | int | float]) -> Counter:
-        metric_name = f"{self._config.prefix}_requests_error_total"
-
-        if metric_name not in PrometheusMiddleware._metrics:
-            PrometheusMiddleware._metrics[metric_name] = Counter(
-                name=metric_name,
-                documentation="Total errors in requests",
-                labelnames=[*labels.keys()],
-            )
-        return cast("Counter", PrometheusMiddleware._metrics[metric_name])
+        pass
 
     def _get_extra_labels(self, request: Request[Any, Any, Any]) -> dict[str, str]:
         """Get extra labels provided by the config and if they are callable, parse them.
@@ -104,8 +69,7 @@ class PrometheusMiddleware(AbstractMiddleware):
         Returns:
         A dictionary of extra labels.
         """
-
-        return {k: str(v(request) if callable(v) else v) for k, v in (self._config.labels or {}).items()}
+        pass
 
     def _get_default_labels(self, request: Request[Any, Any, Any]) -> dict[str, str | int | float]:
         """Get default label values from the request.
@@ -116,16 +80,7 @@ class PrometheusMiddleware(AbstractMiddleware):
         Returns:
             A dictionary of default labels.
         """
-
-        path = request.url.path
-        if self._config.group_path:
-            path = request.scope["path_template"]
-        return {
-            "method": request.method if request.scope["type"] == ScopeType.HTTP else request.scope["type"],
-            "path": path,
-            "status_code": 200,
-            "app_name": self._config.app_name,
-        }
+        pass
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         """ASGI callable.
@@ -173,14 +128,4 @@ class PrometheusMiddleware(AbstractMiddleware):
 
     def _get_wrapped_send(self, send: Send, request_span: dict[str, float]) -> Callable:
         @wraps(send)
-        async def wrapped_send(message: Message) -> None:
-            if message["type"] == "http.response.start":
-                request_span["status_code"] = message["status"]
-
-            if message["type"] == "http.response.body":
-                end = time.perf_counter()
-                request_span["duration"] = end - request_span["start_time"]
-                request_span["end_time"] = end
-            await send(message)
-
-        return wrapped_send
+        pass

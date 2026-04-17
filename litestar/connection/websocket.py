@@ -71,20 +71,7 @@ class WebSocket(Generic[UserT, AuthT, StateT], ASGIConnection["WebsocketRouteHan
         Returns:
             An ASGI receive function.
         """
-
-        async def wrapped_receive() -> ReceiveMessage:
-            if self.connection_state == "disconnect":
-                raise WebSocketDisconnect(detail=DISCONNECT_MESSAGE)
-            message = await receive()
-            if message["type"] == "websocket.connect":
-                self.connection_state = "connect"
-            elif message["type"] == "websocket.receive":
-                self.connection_state = "receive"
-            else:
-                self.connection_state = "disconnect"
-            return message
-
-        return wrapped_receive
+        pass
 
     def send_wrapper(self, send: Send) -> Send:
         """Wrap ``send`` to ensure that state is not disconnected.
@@ -95,13 +82,7 @@ class WebSocket(Generic[UserT, AuthT, StateT], ASGIConnection["WebsocketRouteHan
         Returns:
             An ASGI send function.
         """
-
-        async def wrapped_send(message: Message) -> None:
-            if self.connection_state == "disconnect":
-                raise WebSocketDisconnect(detail=DISCONNECT_MESSAGE)  # pragma: no cover
-            await send(message)
-
-        return wrapped_send
+        pass
 
     async def accept(
         self,

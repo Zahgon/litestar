@@ -97,7 +97,7 @@ class Request(Generic[UserT, AuthT, StateT], ASGIConnection["HTTPRouteHandler", 
         Returns:
             The request :class:`Method <litestar.types.Method>`
         """
-        return self.scope["method"]
+        pass
 
     @property
     def content_type(self) -> tuple[str, dict[str, str]]:
@@ -106,14 +106,7 @@ class Request(Generic[UserT, AuthT, StateT], ASGIConnection["HTTPRouteHandler", 
         Returns:
             A tuple with the parsed value and a dictionary containing any options send in it.
         """
-        if self._content_type is Empty:
-            if (content_type := self._connection_state.content_type) is not Empty:
-                self._content_type = content_type
-            else:
-                self._content_type = self._connection_state.content_type = parse_content_header(
-                    self.headers.get("Content-Type", "")
-                )
-        return self._content_type
+        pass
 
     @property
     def accept(self) -> Accept:
@@ -151,30 +144,11 @@ class Request(Generic[UserT, AuthT, StateT], ASGIConnection["HTTPRouteHandler", 
         Returns:
             An arbitrary value
         """
-        if self._msgpack is Empty:
-            if (msgpack := self._connection_state.msgpack) is not Empty:
-                self._msgpack = msgpack
-            else:
-                body = await self.body()
-                self._msgpack = self._connection_state.msgpack = decode_msgpack(
-                    body or b"\xc0", type_decoders=self.route_handler.type_decoders
-                )
-        return self._msgpack
+        pass
 
     @property
     def content_length(self) -> int | None:
-        cached_content_length = self._content_length
-        if cached_content_length is not Empty:
-            return cached_content_length
-
-        content_length_header = self.headers.get("content-length")
-        try:
-            content_length = self._content_length = (
-                int(content_length_header) if content_length_header is not None else None
-            )
-        except ValueError:
-            raise ClientException(f"Invalid content-length: {content_length_header!r}") from None
-        return content_length
+        pass
 
     async def stream(self) -> AsyncGenerator[bytes, None]:
         """Return an async generator that streams chunks of bytes.

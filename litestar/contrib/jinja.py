@@ -84,7 +84,7 @@ class JinjaTemplateEngine(TemplateEngineProtocol["JinjaTemplate", Mapping[str, A
         Returns:
             None
         """
-        self.engine.globals[key] = pass_context(template_callable)
+        pass
 
     def render_string(self, template_string: str, context: Mapping[str, Any]) -> str:
         """Render a template from a string with the given context.

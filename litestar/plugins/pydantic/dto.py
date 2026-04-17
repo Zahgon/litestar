@@ -58,11 +58,7 @@ def convert_validation_error(validation_error: ValidationError) -> list[dict[str
 
 
 def downtype_for_data_transfer(field_definition: FieldDefinition) -> FieldDefinition:
-    if sub := _down_types.get(field_definition.annotation):
-        return FieldDefinition.from_kwarg(
-            annotation=Annotated[sub, field_definition.metadata], name=field_definition.name
-        )
-    return field_definition
+    pass
 
 
 class PydanticDTO(AbstractDTO[T], Generic[T]):
@@ -87,71 +83,11 @@ class PydanticDTO(AbstractDTO[T], Generic[T]):
         cls,
         model_type: type[pydantic.BaseModel],
     ) -> Generator[DTOFieldDefinition, None, None]:
-        model_info = get_model_info(model_type)
-        model_fields = model_info.model_fields
-        model_field_definitions = model_info.field_definitions
-
-        for field_name, field_definition in model_field_definitions.items():
-            field_definition = downtype_for_data_transfer(field_definition)
-            dto_field = extract_dto_field(field_definition, field_definition.extra)
-
-            default: Any = Empty
-            default_factory: Any = None
-            if field_info := model_fields.get(field_name):
-                # field_info might not exist, since FieldInfo isn't provided by pydantic
-                # for computed fields, but we still generate a FieldDefinition for them
-                try:
-                    extra = field_info.extra  # type: ignore[union-attr, attr-defined]
-                except AttributeError:
-                    extra = field_info.json_schema_extra  # type: ignore[union-attr]
-
-                if extra is not None and extra.pop(DTO_FIELD_META_KEY, None):  # pyright: ignore[reportFunctionMemberAccess]
-                    warn(
-                        message="Declaring 'DTOField' via Pydantic's 'Field.extra' is deprecated. "
-                        "Use 'Annotated', e.g., 'Annotated[str, DTOField(mark='read-only')]' instead. "
-                        "Support for 'DTOField' in 'Field.extra' will be removed in v3.",
-                        category=DeprecationWarning,
-                        stacklevel=2,
-                    )
-
-                if not is_pydantic_undefined(field_info.default):
-                    default = field_info.default
-                elif field_definition.is_optional:
-                    default = None
-                else:
-                    default = Empty
-
-                default_factory = (
-                    field_info.default_factory
-                    if field_info.default_factory and not is_pydantic_undefined(field_info.default_factory)
-                    else None
-                )
-            else:
-                # Computed fields don't expose FieldInfo; mark Optional[...] as default=None so
-                # the transfer struct treats them as optional when the computed value is None.
-                if field_definition.is_optional:
-                    default = None
-                else:
-                    default = Empty
-
-            yield replace(
-                DTOFieldDefinition.from_field_definition(
-                    field_definition=field_definition,
-                    dto_field=dto_field,
-                    model_name=model_type.__name__,
-                    default_factory=default_factory,
-                    # we don't want the constraints to be set on the DTO struct as
-                    # constraints, but as schema metadata only, so we can let pydantic
-                    # handle all the constraining
-                    passthrough_constraints=False,
-                ),
-                default=default,
-                name=field_name,
-            )
+        pass
 
     @classmethod
     def detect_nested_field(cls, field_definition: FieldDefinition) -> bool:
-        return field_definition.is_subclass_of(pydantic.BaseModel)
+        pass
 
     @classmethod
     def get_config_for_model_type(cls, config: DTOConfig, model_type: type[Any]) -> DTOConfig:

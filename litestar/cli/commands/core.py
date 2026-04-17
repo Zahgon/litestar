@@ -133,16 +133,13 @@ class CommaSplittedPath(click.Path):
 )
 def version_command(short: bool) -> None:
     """Show the currently installed Litestar version."""
-    from litestar import __version__
-
-    click.echo(__version__.formatted(short=short))
+    pass
 
 
 @click.command(name="info")
 def info_command(app: Litestar) -> None:
     """Show information about the detected Litestar app."""
-
-    show_app_info(app)
+    pass
 
 
 @click.command(name="run")
@@ -357,15 +354,7 @@ def run_command(
 @click.option("--exclude", help="routes to exclude via regex", type=str, is_flag=False, multiple=True)
 def routes_command(app: Litestar, exclude: tuple[str, ...], schema: bool) -> None:  # pragma: no cover
     """Display information about the application's routes."""
-
-    sorted_routes = sorted(app.routes, key=lambda r: r.path)
-    if not schema:
-        openapi_config = app.openapi_config or DEFAULT_OPENAPI_CONFIG
-        sorted_routes = remove_default_schema_routes(sorted_routes, openapi_config)
-    if exclude is not None:
-        sorted_routes = remove_routes_with_patterns(sorted_routes, exclude)
-
-    console.print(_RouteTree(sorted_routes))
+    pass
 
 
 class _RouteTree(Tree):
@@ -375,40 +364,16 @@ class _RouteTree(Tree):
         self._build()
 
     def _build(self) -> None:
-        for route in self._routes:
-            if isinstance(route, HTTPRoute):
-                self._handle_http_route(route)
-            elif isinstance(route, WebSocketRoute):
-                self._handle_websocket_route(route)
-            else:
-                self._handle_asgi_route(route)
+        pass
 
     def _handle_asgi_like_route(self, route: ASGIRoute | WebSocketRoute, route_type: str) -> None:
-        branch = self.add(f"[green]{route.path}[/green] ({route_type})")
-        branch.add(f"[blue]{route.route_handler.name or route.route_handler.handler_name}[/blue]")
+        pass
 
     def _handle_asgi_route(self, route: ASGIRoute) -> None:
-        self._handle_asgi_like_route(route, route_type="ASGI")
+        pass
 
     def _handle_websocket_route(self, route: WebSocketRoute) -> None:
-        self._handle_asgi_like_route(route, route_type="WS")
+        pass
 
     def _handle_http_route(self, route: HTTPRoute) -> None:
-        branch = self.add(f"[green]{route.path}[/green] (HTTP)")
-        for handler in route.route_handlers:
-            handler_info = [
-                f"[blue]{handler.name or handler.handler_name}[/blue]",
-            ]
-
-            if inspect.iscoroutinefunction(unwrap_partial(handler.fn)):
-                handler_info.append("[magenta]async[/magenta]")
-            else:
-                handler_info.append("[yellow]sync[/yellow]")
-
-            handler_info.append(f"[cyan]{', '.join(sorted(handler.http_methods))}[/cyan]")
-
-            if len(handler.paths) > 1:
-                for path in handler.paths:
-                    branch.add(" ".join([f"[green]{path}[green]", *handler_info]))
-            else:
-                branch.add(" ".join(handler_info))
+        pass

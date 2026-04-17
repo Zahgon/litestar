@@ -29,25 +29,11 @@ class OpenTelemetryPlugin(InitPlugin):
         return DefineMiddleware(OpenTelemetryInstrumentationMiddleware, config=self.config)
 
     def on_app_init(self, app_config: AppConfig) -> AppConfig:
-        app_config.middleware, _middleware = self._pop_otel_middleware(app_config.middleware)
-        if self.config.after_exception_hook_handler:
-            app_config.after_exception.append(self.config.after_exception_hook_handler)
-        return app_config
+        pass
 
     @staticmethod
     def _pop_otel_middleware(middlewares: list[Middleware]) -> tuple[list[Middleware], DefineMiddleware | None]:
         """Get the OpenTelemetry middleware if it is enabled in the application.
         Remove the middleware from the list of middlewares if it is found.
         """
-        otel_middleware: DefineMiddleware | None = None
-        other_middlewares = []
-        for middleware in middlewares:
-            if (
-                isinstance(middleware, DefineMiddleware)
-                and isinstance(middleware.middleware, type)
-                and issubclass(middleware.middleware, OpenTelemetryInstrumentationMiddleware)
-            ):
-                otel_middleware = middleware
-            else:
-                other_middlewares.append(middleware)
-        return other_middlewares, otel_middleware
+        pass

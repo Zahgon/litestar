@@ -134,24 +134,7 @@ class KwargDefinition:
     @property
     def is_constrained(self) -> bool:
         """Return True if any of the constraints are set."""
-        return any(
-            attr is not None
-            for attr in (
-                self.gt,
-                self.ge,
-                self.lt,
-                self.le,
-                self.multiple_of,
-                self.min_items,
-                self.max_items,
-                self.min_length,
-                self.max_length,
-                self.pattern,
-                self.const,
-                self.lower_case,
-                self.upper_case,
-            )
-        )
+        pass
 
 
 @dataclass(frozen=True)

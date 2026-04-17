@@ -101,7 +101,7 @@ class ExceptionHandlerMiddleware:
 
     @staticmethod
     def _get_debug_scope(scope: Scope) -> bool:
-        return scope["litestar_app"].debug
+        pass
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         """ASGI-callable.
@@ -119,9 +119,7 @@ class ExceptionHandlerMiddleware:
         if scope["type"] == ScopeType.HTTP:
 
             async def wrapped_send(event: Message) -> None:
-                if event["type"] == "http.response.start":
-                    scope_state.response_started = True
-                await send(event)
+                pass
 
         else:
             wrapped_send = send  # type: ignore[assignment]
@@ -166,22 +164,7 @@ class ExceptionHandlerMiddleware:
         Returns:
             None.
         """
-
-        exception_handlers = value_or_raise(ScopeState.from_scope(scope).exception_handlers)
-        request: Request[Any, Any, Any] = litestar_app.request_class(scope=scope, receive=receive, send=send)
-        exception_handler = get_exception_handler(exception_handlers, exc) or self.get_default_http_exception_handler(
-            request, exc
-        )
-
-        if exception_handler is None:
-            raise exc
-
-        response = exception_handler(request, exc)
-        route_handler: BaseRouteHandler | None = scope.get("route_handler")
-        type_encoders = route_handler.type_encoders if route_handler else litestar_app.type_encoders
-        await response.to_asgi_response(request=request, type_encoders=type_encoders)(
-            scope=scope, receive=receive, send=send
-        )
+        pass
 
     @staticmethod
     async def handle_websocket_exception(send: Send, exc: Exception) -> None:
@@ -194,17 +177,7 @@ class ExceptionHandlerMiddleware:
         Returns:
             None.
         """
-        if isinstance(exc, WebSocketException):
-            code = exc.code
-            reason = exc.detail
-        elif isinstance(exc, LitestarException):
-            reason = exc.detail
-            code = 4000 + HTTP_500_INTERNAL_SERVER_ERROR
-        else:
-            raise exc
-
-        event: WebSocketCloseEvent = {"type": "websocket.close", "code": code, "reason": reason}
-        await send(event)
+        pass
 
     def get_default_http_exception_handler(self, request: Request, exc: Exception) -> ExceptionHandler | None:
         """Handle an HTTP exception by returning the appropriate response.
@@ -216,9 +189,4 @@ class ExceptionHandlerMiddleware:
         Returns:
             An HTTP response.
         """
-        status_code = exc.status_code if isinstance(exc, HTTPException) else HTTP_500_INTERNAL_SERVER_ERROR
-        if status_code == HTTP_500_INTERNAL_SERVER_ERROR and self._get_debug_scope(request.scope):
-            return create_debug_response
-        if isinstance(exc, HTTPException):
-            return create_exception_response
-        return None
+        pass

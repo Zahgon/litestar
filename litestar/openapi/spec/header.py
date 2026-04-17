@@ -102,4 +102,4 @@ class OpenAPIHeader(BaseSchemaObject):
 
     @property
     def _exclude_fields(self) -> set[str]:
-        return {"name", "param_in"}
+        pass

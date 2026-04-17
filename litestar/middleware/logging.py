@@ -233,15 +233,6 @@ class LoggingMiddleware(ASGIMiddleware):
         connection_state = ScopeState.from_scope(scope)
 
         async def send_wrapper(message: Message) -> None:
-            if message["type"] == HTTP_RESPONSE_START:
-                connection_state.log_context[HTTP_RESPONSE_START] = message
-            elif message["type"] == HTTP_RESPONSE_BODY:
-                connection_state.log_context[HTTP_RESPONSE_BODY] = message
-                self.log_response(scope=scope)
-
-                if not message.get("more_body"):
-                    connection_state.log_context.clear()
-
-            await send(message)
+            pass
 
         return send_wrapper

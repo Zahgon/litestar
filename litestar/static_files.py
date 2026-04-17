@@ -127,17 +127,7 @@ def create_static_files_router(
 
     @head("/{file_path:path}", name=f"{name}/head")
     async def head_handler(file_path: PurePath, request: Request) -> ASGIFileResponse:
-        return await _handler(
-            path=file_path.as_posix(),
-            is_head_response=True,
-            directories=resolved_directories,
-            fs=file_system,
-            is_html_mode=html_mode,
-            send_as_attachment=send_as_attachment,
-            headers=headers,
-            allow_symlinks_outside_directory=allow_symlinks_outside_directory,
-            request=request,
-        )
+        pass
 
     handlers = [get_handler, head_handler]
 
@@ -145,17 +135,7 @@ def create_static_files_router(
 
         @get("/", name=f"{name}/index")
         async def index_handler(request: Request) -> ASGIFileResponse:
-            return await _handler(
-                path="/",
-                is_head_response=False,
-                directories=resolved_directories,
-                fs=file_system,
-                is_html_mode=True,
-                send_as_attachment=send_as_attachment,
-                headers=headers,
-                allow_symlinks_outside_directory=allow_symlinks_outside_directory,
-                request=request,
-            )
+            pass
 
         handlers.append(index_handler)
 

@@ -35,8 +35,7 @@ class SecretValue(ABC, Generic[SecretT]):
         Returns:
             str | bytes: The secret value.
         """
-
-        return self._secret_value
+        pass
 
     @abstractmethod
     def get_obscured(self) -> SecretT:

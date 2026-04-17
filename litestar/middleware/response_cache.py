@@ -39,20 +39,6 @@ class ResponseCacheMiddleware(AbstractMiddleware):
         messages: list[Message] = []
 
         async def wrapped_send(message: Message) -> None:
-            if not value_or_default(connection_state.is_cached, False):
-                if message["type"] == HTTP_RESPONSE_START:
-                    do_cache = connection_state.do_cache = self.config.cache_response_filter(
-                        cast("HTTPScope", scope), message["status"]
-                    )
-                    if do_cache:
-                        messages.append(message)
-                elif value_or_default(connection_state.do_cache, False):
-                    messages.append(message)
-
-                if messages and message["type"] == HTTP_RESPONSE_BODY and not message.get("more_body"):
-                    key = (route_handler.cache_key_builder or self.config.key_builder)(Request(scope))
-                    store = self.config.get_store_from_app(scope["litestar_app"])
-                    await store.set(key, encode_msgpack(messages), expires_in=expires_in)
-            await send(message)
+            pass
 
         await self.app(scope, receive, wrapped_send)

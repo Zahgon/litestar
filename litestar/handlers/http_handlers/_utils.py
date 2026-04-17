@@ -219,6 +219,4 @@ HTTP_METHOD_NAMES = {m.value for m in HttpMethod}
 
 
 async def cleanup_temporary_files(form_data: dict[str, Any]) -> None:
-    for v in form_data.values():
-        if isinstance(v, UploadFile) and not v.file.closed:
-            await v.close()
+    pass

@@ -65,72 +65,7 @@ class CORSMiddleware(AbstractMiddleware):
         Returns:
             An ASGI send function.
         """
-
-        async def wrapped_send(message: Message) -> None:
-            if message["type"] == "http.response.start":
-                message.setdefault("headers", [])
-                headers = MutableScopeHeaders.from_message(message=message)
-                headers.update(self.config.simple_headers)
-
-                if (self.config.is_allow_all_origins and has_cookie) or (
-                    not self.config.is_allow_all_origins and self.config.is_origin_allowed(origin=origin)
-                ):
-                    headers["Access-Control-Allow-Origin"] = origin
-                    headers["Vary"] = "Origin"
-
-                headers["Access-Control-Allow-Headers"] = ", ".join(sorted(set(self.config.allow_headers)))
-
-                headers["Access-Control-Allow-Methods"] = ", ".join(sorted(set(self.config.allow_methods)))
-
-            await send(message)
-
-        return wrapped_send
+        pass
 
     def _create_preflight_response(self, origin: str, request_headers: Headers) -> Response[str | None]:
-        pre_flight_method = request_headers.get("Access-Control-Request-Method")
-        failures = []
-
-        if not self.config.is_allow_all_methods and (
-            pre_flight_method and pre_flight_method not in self.config.allow_methods
-        ):
-            failures.append("method")
-
-        response_headers = self.config.preflight_headers.copy()
-
-        if not self.config.is_origin_allowed(origin):
-            failures.append("Origin")
-        elif response_headers.get("Access-Control-Allow-Origin") != "*":
-            response_headers["Access-Control-Allow-Origin"] = origin
-
-        pre_flight_requested_headers = [
-            header.strip()
-            for header in request_headers.get("Access-Control-Request-Headers", "").split(",")
-            if header.strip()
-        ]
-
-        if pre_flight_requested_headers:
-            if self.config.is_allow_all_headers:
-                response_headers["Access-Control-Allow-Headers"] = ", ".join(
-                    sorted(set(pre_flight_requested_headers) | DEFAULT_ALLOWED_CORS_HEADERS)
-                )
-            else:
-                all_allowed_headers = set(self.config.allow_headers).union(
-                    default_header.lower() for default_header in DEFAULT_ALLOWED_CORS_HEADERS
-                )
-                if any(header.lower() not in all_allowed_headers for header in pre_flight_requested_headers):
-                    failures.append("headers")
-
-        return (
-            Response(
-                content=f"Disallowed CORS {', '.join(failures)}",
-                status_code=HTTP_400_BAD_REQUEST,
-                media_type=MediaType.TEXT,
-            )
-            if failures
-            else Response(
-                content=None,
-                status_code=HTTP_204_NO_CONTENT,
-                media_type=MediaType.TEXT,
-                headers=response_headers,
-            )
-        )
+        pass

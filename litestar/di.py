@@ -100,15 +100,11 @@ class Provide:
 
     @property
     def signature_model(self) -> type[SignatureModel]:
-        if self._signature_model is None:
-            raise ValueError(f"Cannot access signature model of Provider {self} because it is not finalized")
-        return self._signature_model
+        pass
 
     @property
     def parsed_fn_signature(self) -> ParsedSignature:
-        if self._parsed_fn_signature is None:
-            raise ValueError(f"Cannot access parsed signature of Provider {self} because it is not finalized")
-        return self._parsed_fn_signature
+        pass
 
     def finalize(
         self,
@@ -119,26 +115,7 @@ class Provide:
         data_dto: type[AbstractDTO] | None,
         type_decoders: TypeDecodersSequence,
     ) -> None:
-        if self._parsed_fn_signature is None:
-            dependency = unwrap_partial(self.dependency)
-            plugin = next(
-                (p for p in plugins.di if isinstance(p, DIPlugin) and p.has_typed_init(dependency)),
-                None,
-            )
-            if plugin:
-                signature, init_type_hints = plugin.get_typed_init(dependency)
-                self._parsed_fn_signature = ParsedSignature.from_signature(signature, init_type_hints)
-            else:
-                self._parsed_fn_signature = ParsedSignature.from_fn(dependency, signature_namespace)
-
-        if self._signature_model is None:
-            self._signature_model = SignatureModel.create(
-                dependency_name_set=dependency_keys,
-                fn=self.dependency,
-                parsed_signature=self.parsed_fn_signature,
-                data_dto=data_dto,
-                type_decoders=type_decoders,
-            )
+        pass
 
     async def __call__(self, **kwargs: Any) -> Any:
         """Call the provider's dependency."""

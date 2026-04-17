@@ -118,7 +118,7 @@ class MakoTemplateEngine(TemplateEngineProtocol[MakoTemplate, Mapping[str, Any]]
         Returns:
             None
         """
-        self._template_callables.append((key, template_callable))
+        pass
 
     def render_string(self, template_string: str, context: Mapping[str, Any]) -> str:
         """Render a template from a string with the given context.

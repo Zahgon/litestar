@@ -71,56 +71,7 @@ def _unwrap_implicit_optional_hints(defaults: dict[str, Any], hints: dict[str, A
     Returns:
         Mapping of names to types.
     """
-
-    def _is_two_arg_optional(origin_: Any, args_: Any) -> bool:
-        """Check if a type is a two-argument optional type.
-
-        If the type has been wrapped in `Optional` by `get_type_hints()` it will always be a union of a type and
-        `NoneType`.
-
-        See: https://github.com/litestar-org/litestar/pull/2516
-        """
-        return origin_ is Union and len(args_) == 2 and args_[1] is type(None)
-
-    def _is_any_optional(origin_: Any, args_: tuple[Any, ...]) -> bool:
-        """Detect if a type is a union with `NoneType`.
-
-        After detecting that a type is a two-argument optional type, this function can be used to detect if the
-        inner type is a union with `NoneType` at all.
-
-        We only want to perform the unwrapping of the optional union if the inner type is optional as well.
-        """
-        return origin_ is Union and any(arg is type(None) for arg in args_)
-
-    for name, default in defaults.items():
-        if default is not None:
-            continue
-
-        hint = hints[name]
-        origin = get_origin(hint)
-        args = get_args(hint)
-
-        if _is_two_arg_optional(origin, args):
-            unwrapped_inner, meta, wrappers = unwrap_annotation(args[0])
-
-            if Annotated not in wrappers:
-                continue
-
-            inner_args = get_args(unwrapped_inner)
-
-            if not _is_any_optional(get_origin(unwrapped_inner), inner_args):
-                # this is where hint is like `Union[Annotated[Union[str, int], ...], NoneType]`, we add the outer union
-                # into the inner one, and re-wrap with Annotated
-                union_args = (*(inner_args or (unwrapped_inner,)), type(None))
-                # calling `__class_getitem__` directly as in earlier py vers it is a syntax error to unpack into
-                # the getitem brackets, e.g., Annotated[T, *meta].
-                hints[name] = Annotated.__class_getitem__((Union[union_args], *meta))  # type: ignore[attr-defined]
-                continue
-
-            # this is where hint is like `Union[Annotated[Union[str, NoneType], ...], NoneType]`, we remove the
-            # redundant outer union
-            hints[name] = args[0]
-    return hints
+    pass
 
 
 def get_fn_type_hints(fn: Any, namespace: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -189,11 +140,7 @@ class ParsedSignature:
         Returns:
             ParsedSignature
         """
-        signature = Signature.from_callable(fn)
-        fn_type_hints = get_fn_type_hints(fn, namespace=signature_namespace)
-        expanded_type_hints = expand_type_var_in_type_hint(fn_type_hints, signature_namespace)
-
-        return cls.from_signature(signature, expanded_type_hints)
+        pass
 
     @classmethod
     def from_signature(cls, signature: Signature, fn_type_hints: dict[str, type]) -> Self:
@@ -206,20 +153,7 @@ class ParsedSignature:
         Returns:
             ParsedSignature
         """
-
-        parameters = tuple(
-            FieldDefinition.from_parameter(parameter=parameter, fn_type_hints=fn_type_hints)
-            for name, parameter in signature.parameters.items()
-            if name not in ("self", "cls")
-        )
-
-        return_type = FieldDefinition.from_annotation(fn_type_hints.get("return", Any))
-
-        return cls(
-            parameters={p.name: p for p in parameters},
-            return_type=return_type if "return" in fn_type_hints else replace(return_type, annotation=Empty),
-            original_signature=signature,
-        )
+        pass
 
 
 def add_types_to_signature_namespace(

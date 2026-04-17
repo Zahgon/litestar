@@ -92,20 +92,4 @@ class PydanticPlugin(InitPlugin):
         Args:
             app_config: The :class:`AppConfig <.config.app.AppConfig>` instance.
         """
-        app_config.plugins.extend(
-            [
-                PydanticInitPlugin(
-                    exclude=self.exclude,
-                    exclude_defaults=self.exclude_defaults,
-                    exclude_none=self.exclude_none,
-                    exclude_unset=self.exclude_unset,
-                    include=self.include,
-                    prefer_alias=self.prefer_alias,
-                    validate_strict=self.validate_strict,
-                    round_trip=self.round_trip,
-                ),
-                PydanticSchemaPlugin(prefer_alias=self.prefer_alias),
-                PydanticDIPlugin(),
-            ]
-        )
-        return app_config
+        pass

@@ -79,8 +79,7 @@ class RedisStore(NamespacedStore):
         )
 
     async def _shutdown(self) -> None:
-        if self.handle_client_shutdown:
-            await self._redis.aclose(close_connection_pool=True)  # type: ignore[attr-defined]
+        pass
 
     async def __aexit__(
         self,
@@ -111,30 +110,14 @@ class RedisStore(NamespacedStore):
             password: Redis password to use
             namespace: Virtual key namespace to use
         """
-        pool: ConnectionPool[Connection] = ConnectionPool.from_url(
-            url=url,
-            db=db,
-            decode_responses=False,
-            port=port,
-            username=username,
-            password=password,
-        )
-        return cls(
-            redis=Redis(connection_pool=pool),
-            namespace=namespace,
-            handle_client_shutdown=True,
-        )
+        pass
 
     def with_namespace(self, namespace: str) -> RedisStore:
         """Return a new :class:`RedisStore` with a nested virtual key namespace.
         The current instances namespace will serve as a prefix for the namespace, so it
         can be considered the parent namespace.
         """
-        return type(self)(
-            redis=self._redis,
-            namespace=f"{self.namespace}_{namespace}" if self.namespace else namespace,
-            handle_client_shutdown=self.handle_client_shutdown,
-        )
+        pass
 
     def _make_key(self, key: str) -> str:
         prefix = f"{self.namespace}:" if self.namespace else ""
@@ -180,11 +163,7 @@ class RedisStore(NamespacedStore):
         Returns:
             ``None``
         """
-        if expires_in is not None and keep_ttl:
-            raise ValueError("Cannot set both 'expires_in' and 'keep_ttl': these options are mutually exclusive")
-        if isinstance(value, str):
-            value = value.encode("utf-8")
-        await self._redis.set(self._make_key(key), value, ex=expires_in, keepttl=keep_ttl)
+        pass
 
     async def get(self, key: str, renew_for: int | timedelta | None = None) -> bytes | None:
         """Get a value.
@@ -225,10 +204,7 @@ class RedisStore(NamespacedStore):
         Raises:
             ImproperlyConfiguredException: If no namespace was configured
         """
-        if not self.namespace:
-            raise ImproperlyConfiguredException("Cannot perform delete operation: No namespace configured")
-
-        await self._delete_all_script(keys=[], args=[f"{self.namespace}*:*"])
+        pass
 
     async def exists(self, key: str) -> bool:
         """Check if a given ``key`` exists."""
@@ -238,5 +214,4 @@ class RedisStore(NamespacedStore):
         """Get the time in seconds ``key`` expires in. If no such ``key`` exists or no
         expiry time was set, return ``None``.
         """
-        ttl = await self._redis.ttl(self._make_key(key))
-        return None if ttl == -2 else ttl
+        pass

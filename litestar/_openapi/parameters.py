@@ -71,7 +71,7 @@ class ParameterCollection:
 
     def list(self) -> list[Parameter]:
         """Return a list of all ``Parameter``'s in the collection."""
-        return list(self._parameters.values())
+        pass
 
 
 class ParameterFactory:

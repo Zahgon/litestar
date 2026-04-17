@@ -54,12 +54,12 @@ class DependencyCleanupGroup(AbstractAsyncContextManager):
         if isasyncgen(generator):
 
             async def wrapped_async() -> None:
-                await anext(generator, None)
+                pass
 
             return wrapped_async
 
         def wrapped() -> None:
-            next(generator, None)  # type: ignore[arg-type]
+            pass
 
         return ensure_async_callable(wrapped)
 

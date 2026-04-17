@@ -205,38 +205,7 @@ class Controller:
         self.path = normalize_path(self.path or "/")
 
     def as_router(self) -> Router:
-        from litestar.router import Router
-
-        return Router(
-            path=self.path,
-            route_handlers=self.get_route_handlers(),  # type: ignore[arg-type]
-            after_request=self.after_request,
-            after_response=self.after_response,
-            before_request=self.before_request,
-            cache_control=self.cache_control,
-            dependencies=self.dependencies,
-            dto=self.dto,
-            etag=self.etag,
-            exception_handlers=self.exception_handlers,
-            guards=self.guards,
-            include_in_schema=self.include_in_schema,
-            middleware=self.middleware,
-            opt=self.opt,
-            parameters=self.parameters,
-            request_class=self.request_class,
-            response_class=self.response_class,
-            response_cookies=self.response_cookies,
-            response_headers=self.response_headers,
-            return_dto=self.return_dto,
-            security=self.security,
-            signature_types=self.signature_types,
-            signature_namespace=self.signature_namespace,
-            tags=self.tags,
-            type_encoders=self.type_encoders,
-            type_decoders=self.type_decoders,
-            websocket_class=self.websocket_class,
-            request_max_body_size=self.request_max_body_size,
-        )
+        pass
 
     def get_route_handlers(self) -> list[BaseRouteHandler]:
         """Get a controller's route handlers

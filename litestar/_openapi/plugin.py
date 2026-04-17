@@ -32,23 +32,7 @@ def handle_schema_path_not_found(path: str = "/") -> Response:
 
     This preserves backward compatibility with the Controller-based OpenAPI implementation.
     """
-    if path.endswith((".json", ".yaml", ".yml")):
-        raise NotFoundException
-
-    content = b"""
-    <!DOCTYPE html>
-    <html>
-        <head>
-            <title>404 Not found</title>
-            <meta charset="utf-8"/>
-            <meta name="viewport" content="width=device-width, initial-scale=1">
-        </head>
-        <body>
-            <h1>Error 404</h1>
-        </body>
-    </html>
-    """
-    return Response(content, media_type=MediaType.HTML, status_code=HTTP_404_NOT_FOUND)
+    pass
 
 
 class OpenAPIPlugin(InitPlugin, ReceiveRoutePlugin):
@@ -116,89 +100,14 @@ class OpenAPIPlugin(InitPlugin, ReceiveRoutePlugin):
         Returns:
             The router.
         """
-        if (router := self.openapi_config.openapi_router) is None:
-            router = Router(
-                self.openapi_config.path or "/schema",
-                route_handlers=[],
-                include_in_schema=False,
-                dto=None,
-                return_dto=None,
-            )
-
-        root_configured = False
-        openapi_json_found = False
-
-        def create_handler(plugin_: OpenAPIRenderPlugin) -> HTTPRouteHandler:
-            """Create a handler for serving the plugin's documentation site.
-
-            If the plugin is the default plugin, a handler is created for the root path in addition
-            to the plugin's configured paths.
-
-            If the plugin has a path for serving the OpenAPI schema file, the `openapi_json_found`
-            flag is set to `True`, so that we don't create a handler for serving the JSON schema file.
-
-            Args:
-                plugin_: The plugin to create the handler for.
-
-            Returns:
-                The handler.
-            """
-            paths = list(plugin_.paths)
-            if plugin_ is self.openapi_config.default_plugin:
-                if not plugin_.has_path("/"):
-                    paths.append("/")
-                nonlocal root_configured
-                root_configured = True
-
-            handler_name = None
-            if plugin_.has_path("/openapi.json"):
-                nonlocal openapi_json_found
-                openapi_json_found = True
-                handler_name = OPENAPI_JSON_HANDLER_NAME
-
-            @get(paths, media_type=plugin_.media_type, sync_to_thread=False, name=handler_name)
-            def _handler(request: Request) -> bytes:
-                return plugin_.render(request, self.provide_openapi_schema())
-
-            return _handler
-
-        for plugin in self.openapi_config.render_plugins:
-            router.register(create_handler(plugin))
-
-        not_found_handler_paths = ["/{path:str}"]
-        if not root_configured:
-            not_found_handler_paths.append("/")
-
-        not_found_handler = get(not_found_handler_paths, media_type=MediaType.HTML, sync_to_thread=False)(
-            handle_schema_path_not_found
-        )
-        router.register(not_found_handler)
-
-        if not openapi_json_found:
-            router.register(create_handler(JsonRenderPlugin()))
-
-        for plugin in self.openapi_config.render_plugins:
-            plugin.receive_router(router)
-
-        return router
+        pass
 
     def on_app_init(self, app_config: AppConfig) -> AppConfig:
-        if app_config.openapi_config:
-            self._openapi_config = app_config.openapi_config
-            app_config.route_handlers.append(self.create_openapi_router())
-        return app_config
+        pass
 
     @property
     def openapi_config(self) -> OpenAPIConfig:
-        if not self._openapi_config:
-            raise ImproperlyConfiguredException("OpenAPIConfig not initialized")
-        return self._openapi_config
+        pass
 
     def receive_route(self, route: BaseRoute) -> None:
-        if not isinstance(route, HTTPRoute):
-            return
-
-        if any(route_handler.include_in_schema for route_handler in route.route_handler_map.values()):
-            # Force recompute the schema if a new route is added
-            self._openapi = None
-            self.included_routes[route.path] = route
+        pass

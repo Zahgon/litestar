@@ -225,14 +225,7 @@ class SessionMiddleware(AbstractMiddleware, Generic[BaseSessionBackendT]):
             Returns:
                 None
             """
-            if message["type"] != "http.response.start":
-                await connection.send(message)
-                return
-
-            scope_session = connection.scope.get("session")
-
-            await self.backend.store_in_message(scope_session, message, connection)
-            await connection.send(message)
+            pass
 
         return wrapped_send
 

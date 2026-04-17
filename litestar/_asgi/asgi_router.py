@@ -115,14 +115,7 @@ class ASGIRouter:
         Returns:
             A tuple composed of the ASGIApp of the route, the route handler instance, the resolved and normalized path and any parsed path params.
         """
-        return parse_path_to_route(
-            mount_paths_regex=self._mount_paths_regex,
-            mount_routes=self._mount_routes,
-            path=path,
-            plain_routes=self._plain_routes,
-            root_node=self.root_route_map_node,
-            method=method,
-        )
+        pass
 
     def _store_handler_to_route_mapping(self, route: BaseRoute) -> None:
         """Store the mapping of route handlers to routes and to route handler names.
@@ -133,44 +126,14 @@ class ASGIRouter:
         Returns:
             None
         """
-
-        for handler in get_route_handlers(route):
-            if handler.name in self.route_handler_index and str(self.route_handler_index[handler.name]) != str(handler):
-                raise ImproperlyConfiguredException(
-                    f"route handler names must be unique - {handler.name} is not unique."
-                )
-            identifier = handler.name or str(handler)
-            self.route_mapping[identifier].append(route)
-            self.route_handler_index[identifier] = handler
+        pass
 
     def construct_routing_trie(self) -> None:
         """Create a map of the app's routes.
 
         This map is used in the asgi router to route requests.
         """
-        if self._trie_initialized:  # pragma: no cover
-            self._mount_paths_regex = None
-            self._mount_routes = {}
-            self._plain_routes = set()
-            self._registered_routes = set()
-            self.root_route_map_node = create_node()
-            self.route_handler_index = {}
-            self.route_mapping = defaultdict(list)
-
-        for route in self.app.routes:
-            add_route_to_trie(
-                app=self.app,
-                mount_routes=self._mount_routes,
-                plain_routes=self._plain_routes,
-                root_node=self.root_route_map_node,
-                route=route,
-            )
-            self._store_handler_to_route_mapping(route)
-            self._registered_routes.add(route)
-
-        validate_node(node=self.root_route_map_node)
-        if self._mount_routes:
-            self._mount_paths_regex = re.compile("|".join(sorted(set(self._mount_routes))))
+        pass
 
     async def lifespan(self, receive: LifeSpanReceive, send: LifeSpanSend) -> None:
         """Handle the ASGI "lifespan" event on application startup and shutdown.
@@ -182,28 +145,4 @@ class ASGIRouter:
         Returns:
             None.
         """
-        shutdown_event: LifeSpanShutdownCompleteEvent = {"type": "lifespan.shutdown.complete"}
-        startup_event: LifeSpanStartupCompleteEvent = {"type": "lifespan.startup.complete"}
-
-        await receive()
-
-        started = False
-        try:
-            async with self.app.lifespan():
-                await send(startup_event)
-                started = True
-                await receive()
-
-        except BaseException as e:
-            formatted_exception = format_exc()
-            failure_message: LifeSpanStartupFailedEvent | LifeSpanShutdownFailedEvent
-
-            if started:
-                failure_message = {"type": "lifespan.shutdown.failed", "message": formatted_exception}
-            else:
-                failure_message = {"type": "lifespan.startup.failed", "message": formatted_exception}
-
-            await send(failure_message)
-            raise e
-
-        await send(shutdown_event)
+        pass

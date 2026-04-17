@@ -125,11 +125,7 @@ class JWTAuthenticationMiddleware(AbstractAuthenticationMiddleware):
         Raises:
             NotAuthorizedException: If token is invalid or user is not found.
         """
-        auth_header = connection.headers.get(self.auth_header)
-        if not auth_header:
-            raise NotAuthorizedException("No JWT token found in request header")
-        encoded_token = auth_header.partition(" ")[-1]
-        return await self.authenticate_token(encoded_token=encoded_token, connection=connection)
+        pass
 
     async def authenticate_token(
         self, encoded_token: str, connection: ASGIConnection[Any, Any, Any, Any]
@@ -146,28 +142,7 @@ class JWTAuthenticationMiddleware(AbstractAuthenticationMiddleware):
         Returns:
             AuthenticationResult
         """
-        token = self.token_cls.decode(
-            encoded_token=encoded_token,
-            secret=self.token_secret,
-            algorithm=self.algorithm,
-            audience=self.token_audience,
-            issuer=self.token_issuer,
-            require_claims=self.require_claims,
-            verify_exp=self.verify_expiry,
-            verify_nbf=self.verify_not_before,
-            strict_audience=self.strict_audience,
-        )
-
-        user = await self.retrieve_user_handler(token, connection)
-        token_revoked = False
-
-        if self.revoked_token_handler:
-            token_revoked = await self.revoked_token_handler(token, connection)
-
-        if not user or token_revoked:
-            raise NotAuthorizedException()
-
-        return AuthenticationResult(user=user, auth=token)
+        pass
 
 
 class JWTCookieAuthenticationMiddleware(JWTAuthenticationMiddleware):
@@ -262,10 +237,4 @@ class JWTCookieAuthenticationMiddleware(JWTAuthenticationMiddleware):
         Returns:
             AuthenticationResult
         """
-        encoded_token = (
-            connection.headers.get(self.auth_header, "").partition(" ")[-1]
-            or connection.cookies.get(self.auth_cookie_key, "").split(" ")[-1]
-        )
-        if not encoded_token:
-            raise NotAuthorizedException("No JWT token found in request header or cookies")
-        return await self.authenticate_token(encoded_token=encoded_token, connection=connection)
+        pass

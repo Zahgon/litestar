@@ -492,58 +492,11 @@ class Litestar(Router):
     def _patch_opentelemetry_middleware(config: AppConfig) -> AppConfig:
         # workaround to support otel middleware priority. Should be replaced by regular
         # middleware priorities once available
-        try:
-            from litestar.contrib.opentelemetry import OpenTelemetryPlugin
-
-            if not any(isinstance(p, OpenTelemetryPlugin) for p in config.plugins):
-                config.middleware, otel_middleware = OpenTelemetryPlugin._pop_otel_middleware(config.middleware)
-                if otel_middleware:
-                    otel_plugin = OpenTelemetryPlugin()
-                    otel_plugin._middleware = otel_middleware
-                    config.plugins = [*config.plugins, otel_plugin]
-        except ImportError:
-            pass
-        return config
+        pass
 
     @staticmethod
     def _get_default_plugins(plugins: list[PluginProtocol]) -> list[PluginProtocol]:
-        from litestar.plugins.core import MsgspecDIPlugin
-
-        plugins.append(MsgspecDIPlugin())
-
-        with suppress(MissingDependencyException):
-            from litestar.plugins.pydantic import (
-                PydanticDIPlugin,
-                PydanticInitPlugin,
-                PydanticPlugin,
-                PydanticSchemaPlugin,
-            )
-
-            pydantic_plugin_found = any(isinstance(plugin, PydanticPlugin) for plugin in plugins)
-            pydantic_init_plugin_found = any(isinstance(plugin, PydanticInitPlugin) for plugin in plugins)
-            pydantic_schema_plugin_found = any(isinstance(plugin, PydanticSchemaPlugin) for plugin in plugins)
-            pydantic_serialization_plugin_found = any(isinstance(plugin, PydanticDIPlugin) for plugin in plugins)
-            if not pydantic_plugin_found and not pydantic_init_plugin_found and not pydantic_schema_plugin_found:
-                plugins.append(PydanticPlugin())
-            elif not pydantic_plugin_found and pydantic_init_plugin_found and not pydantic_schema_plugin_found:
-                plugins.append(PydanticSchemaPlugin())
-            elif not pydantic_plugin_found and not pydantic_init_plugin_found:
-                plugins.append(PydanticInitPlugin())
-            if not pydantic_plugin_found and not pydantic_serialization_plugin_found:
-                plugins.append(PydanticDIPlugin())
-        with suppress(MissingDependencyException):
-            from litestar.plugins.attrs import AttrsSchemaPlugin
-
-            pre_configured = any(isinstance(plugin, AttrsSchemaPlugin) for plugin in plugins)
-            if not pre_configured:
-                plugins.append(AttrsSchemaPlugin())
-
-        from litestar.file_system import FileSystemRegistry
-
-        if not any(isinstance(plugin, FileSystemRegistry) for plugin in plugins):
-            plugins.append(FileSystemRegistry())
-
-        return plugins
+        pass
 
     @property
     def debug(self) -> bool:
@@ -581,10 +534,7 @@ class Litestar(Router):
         return scope["litestar_app"]
 
     async def _call_lifespan_hook(self, hook: LifespanHook) -> None:
-        ret = hook(self) if inspect.signature(hook).parameters else hook()  # type: ignore[call-arg]
-
-        if is_async_callable(hook):  # pyright: ignore[reportArgumentType]
-            await ret
+        pass
 
     @asynccontextmanager
     async def lifespan(self) -> AsyncGenerator[None, None]:
@@ -595,21 +545,7 @@ class Litestar(Router):
         responsible for calling the ``on_startup``, ``on_shutdown`` hooks, as well as
         custom lifespan managers.
         """
-        async with AsyncExitStack() as exit_stack:
-            for hook in self.on_shutdown[::-1]:
-                exit_stack.push_async_callback(partial(self._call_lifespan_hook, hook))
-
-            await exit_stack.enter_async_context(self.event_emitter)
-
-            for manager in self._lifespan_managers:
-                if not isinstance(manager, AbstractAsyncContextManager):
-                    manager = manager(self)
-                await exit_stack.enter_async_context(manager)
-
-            for hook in self.on_startup:
-                await self._call_lifespan_hook(hook)
-
-            yield
+        pass
 
     @property
     def openapi_schema(self) -> OpenAPI:
@@ -623,7 +559,7 @@ class Litestar(Router):
         Raises:
             ImproperlyConfiguredException: If the application ``openapi_config`` attribute is ``None``.
         """
-        return self.plugins.get(OpenAPIPlugin).provide_openapi()
+        pass
 
     @classmethod
     def from_config(cls, config: AppConfig) -> Self:
@@ -635,7 +571,7 @@ class Litestar(Router):
         Returns:
             An instance of ``Litestar`` application.
         """
-        return cls(**dict(extract_dataclass_items(config)))
+        pass
 
     @staticmethod
     def _create_route_handler_method_map(
@@ -646,53 +582,11 @@ class Litestar(Router):
         Returns:
              A dictionary mapping paths to route handlers
         """
-        route_map: defaultdict[str, RouteHandlerMapItem] = defaultdict(dict)
-        for route in routes:
-            if isinstance(route, HTTPRoute):
-                route_map[route.path] = route.route_handler_map  # type: ignore[assignment]
-            else:
-                route_map[route.path]["websocket" if isinstance(route, WebSocketRoute) else "asgi"] = (
-                    route.route_handler
-                )
-
-        return route_map
+        pass
 
     def _build_routes(self, route_handlers: Iterable[BaseRouteHandler]) -> list[HTTPRoute | ASGIRoute | WebSocketRoute]:
         """Create routes for all the handlers"""
-        routes: list[HTTPRoute | ASGIRoute | WebSocketRoute] = []
-
-        # since http routes can have multiple handlers (the case when one path handles
-        # multiple methods - we do the last mile of the routing outside the trie and on
-        # the route itself), we first group them by path and then create one route for
-        # each path
-        http_path_groups: dict[str, list[HTTPRouteHandler]] = collections.defaultdict(list)
-
-        for handler in route_handlers:
-            if isinstance(handler, HTTPRouteHandler):
-                for path in handler.paths:
-                    http_path_groups[path].append(handler)
-            elif isinstance(handler, WebsocketRouteHandler):
-                for path in handler.paths:
-                    routes.append(WebSocketRoute(path=path, route_handler=handler))
-            elif isinstance(handler, ASGIRouteHandler):
-                for path in handler.paths:
-                    routes.append(ASGIRoute(path=path, route_handler=handler))
-
-        for path, http_handlers in http_path_groups.items():
-            routes.append(
-                HTTPRoute(path=path, route_handlers=_maybe_add_options_handler(path, http_handlers, root=self))
-            )
-
-        for finalized_route in routes:
-            route_handlers = get_route_handlers(finalized_route)
-
-            for route_handler in route_handlers:
-                route_handler.on_registration(route=finalized_route, app=self)
-
-            for plugin in self.plugins.receive_route:
-                plugin.receive_route(finalized_route)
-
-        return routes
+        pass
 
     def _iter_handlers(
         self, handlers: Iterable[ControllerRouterHandler], bases: list[Router]
@@ -718,12 +612,7 @@ class Litestar(Router):
         ]
 
         """
-        for handler in handlers:
-            handler = self._validate_registration_value(handler)
-            if isinstance(handler, Router):
-                yield from self._iter_handlers(handler.route_handlers, bases=[handler, *bases])
-            else:
-                yield handler, bases
+        pass
 
     def _reduce_handlers(self, handlers: Iterable[ControllerRouterHandler]) -> Generator[BaseRouteHandler, None, None]:
         """Reduce possibly nested 'handlers' by recursively iterating over them and their
@@ -765,54 +654,14 @@ class Litestar(Router):
             async def handler_two() -> None:
                 pass
         """
-        for handler, bases in self._iter_handlers(handlers, bases=[self]):
-            yield handler.merge(*bases)
+        pass
 
     def _validate_registration_value(self, value: ControllerRouterHandler) -> RouteHandlerType | Router:
         """Ensure values passed to the register method are supported."""
-        from litestar.controller import Controller
-        from litestar.handlers import ASGIRouteHandler, WebsocketListener
-
-        if is_class_and_subclass(value, Controller):
-            return value().as_router()
-
-        # this narrows down to an ABC, but we assume a non-abstract subclass of the ABC superclass
-        if is_class_and_subclass(value, WebsocketListener):
-            return value().to_handler()  # pyright: ignore[reportAbstractUsage]
-        if isinstance(value, Router):
-            if value is self:
-                raise ImproperlyConfiguredException("Cannot register a router on itself")
-
-            return value
-
-        if isinstance(value, (ASGIRouteHandler, HTTPRouteHandler, WebsocketRouteHandler)):
-            return value
-
-        raise ImproperlyConfiguredException(
-            "Unsupported value passed to `Router.register`. "
-            "If you passed in a function or method, "
-            "make sure to decorate it first with one of the routing decorators"
-        )
+        pass
 
     def register(self, value: ControllerRouterHandler) -> None:
-        warnings.warn(
-            "Registering routes after the application instance has been "
-            "created is discouraged, as it might lead to unexpected behaviour "
-            "and is a costly operation. To register routes dynamically, a "
-            "plugin should be used where routes can be added to the "
-            "application via 'AppConfig' 'route_handlers' property",
-            category=LitestarWarning,
-            stacklevel=2,
-        )
-        self.routes = []
-        self.routes = self._build_routes(
-            itertools.chain(
-                self._reduce_handlers([value]), (h for route in self.routes for h in get_route_handlers(route))
-            )
-        )
-        self.route_handler_method_map = self._create_route_handler_method_map(self.routes)
-
-        self.asgi_router.construct_routing_trie()
+        pass
 
     def get_handler_index_by_name(self, name: str) -> HandlerIndex | None:
         """Receives a route handler name and returns an optional dictionary containing the route handler instance and
@@ -936,18 +785,7 @@ class Litestar(Router):
 
         If CORS or TrustedHost configs are provided to the constructor, they will wrap the router as well.
         """
-        asgi_handler = wrap_in_exception_handler(app=self.asgi_router)
-
-        if self.cors_config:
-            asgi_handler = CORSMiddleware(app=asgi_handler, config=self.cors_config)
-
-        try:
-            otel_plugin: OpenTelemetryPlugin = self.plugins.get("OpenTelemetryPlugin")
-            asgi_handler = otel_plugin.middleware(app=asgi_handler)
-        except KeyError:
-            pass
-
-        return asgi_handler
+        pass
 
     def _wrap_send(self, send: Send, scope: Scope) -> Send:
         """Wrap the ASGI send and handles any 'before send' hooks.
@@ -959,15 +797,7 @@ class Litestar(Router):
         Returns:
             An ASGI send function.
         """
-        if self.before_send:
-
-            async def wrapped_send(message: Message) -> None:
-                for hook in self.before_send:
-                    await hook(message, scope)
-                await send(message)
-
-            return wrapped_send
-        return send
+        pass
 
     def update_openapi_schema(self) -> None:
         """Update the OpenAPI schema to reflect the route handlers registered on the app.
@@ -975,7 +805,7 @@ class Litestar(Router):
         Returns:
             None
         """
-        self.plugins.get(OpenAPIPlugin)._build_openapi()
+        pass
 
     def emit(self, event_id: str, *args: Any, **kwargs: Any) -> None:
         """Emit an event to all attached listeners.
@@ -988,15 +818,10 @@ class Litestar(Router):
         Returns:
             None
         """
-        self.event_emitter.emit(event_id, *args, **kwargs)
+        pass
 
 
 def _maybe_add_options_handler(
     path: str, http_handlers: list[HTTPRouteHandler], root: Router
 ) -> list[HTTPRouteHandler]:
-    handler_methods = {method for handler in http_handlers for method in handler.http_methods}
-    if "OPTIONS" not in handler_methods:
-        options_handler = create_options_handler(path=path, allow_methods={*handler_methods, "OPTIONS"})  # pyright: ignore[reportArgumentType]
-        options_handler = options_handler.merge(root)
-        return [*http_handlers, options_handler]
-    return http_handlers
+    pass

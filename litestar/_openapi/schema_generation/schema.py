@@ -246,9 +246,7 @@ class SchemaCreator:
     @property
     def not_generating_examples(self) -> SchemaCreator:
         """Return a SchemaCreator with generate_examples set to False."""
-        if not self.generate_examples:
-            return self
-        return type(self)(generate_examples=False, plugins=self.plugins, prefer_alias=False)
+        pass
 
     @staticmethod
     def plugin_supports_field(plugin: OpenAPISchemaPlugin, field: FieldDefinition) -> bool:

@@ -55,14 +55,7 @@ def _transform_state(func: TemplateCallableType[Mapping[str, Any], P, T]) -> Tem
     This is for wrapping callables like ``url_for()`` that receive a mapping as first argument so they can be used
     with minijinja which passes a ``StateProtocol`` instance as first argument.
     """
-
-    @functools.wraps(func)
-    @pass_state
-    def wrapped(state: StateProtocol, /, *args: P.args, **kwargs: P.kwargs) -> T:
-        template_context = {"request": state.lookup("request"), "csrf_input": state.lookup("csrf_input")}
-        return func(template_context, *args, **kwargs)
-
-    return wrapped
+    pass
 
 
 class MiniJinjaTemplate(TemplateProtocol):
@@ -121,13 +114,7 @@ class MiniJinjaTemplateEngine(TemplateEngineProtocol["MiniJinjaTemplate", StateP
                 Raises:
                     TemplateNotFoundException: if no template is found.
                 """
-                directories = directory if isinstance(directory, list) else [directory]
-
-                for d in directories:
-                    template_path = Path(d) / name
-                    if template_path.exists():
-                        return template_path.read_text()
-                raise TemplateNotFoundException(template_name=name)
+                pass
 
             self.engine = Environment(loader=_loader)
         elif engine_instance:
@@ -168,13 +155,7 @@ class MiniJinjaTemplateEngine(TemplateEngineProtocol["MiniJinjaTemplate", StateP
         Returns:
             None
         """
-
-        def is_decorated(func: Callable) -> bool:
-            return hasattr(func, "__wrapped__") or func.__name__ not in globals()
-
-        if not is_decorated(template_callable):
-            template_callable = _transform_state(template_callable)  # type: ignore[arg-type] # pragma: no cover
-        self.engine.add_global(key, pass_state(template_callable))
+        pass
 
     def render_string(self, template_string: str, context: Mapping[str, Any]) -> str:
         """Render a template from a string with the given context.

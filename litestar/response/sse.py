@@ -76,30 +76,13 @@ class _ServerSentEventIterator(AsyncIteratorWrapper[bytes]):
             raise ImproperlyConfiguredException(f"Invalid type {type(content)} for ServerSentEvent")
 
     def ensure_bytes(self, data: str | int | bytes | dict | ServerSentEventMessage, sep: str) -> bytes:
-        if isinstance(data, ServerSentEventMessage):
-            return data.encode()
-        if isinstance(data, dict):
-            data["sep"] = sep
-            return ServerSentEventMessage(**data).encode()
-
-        return ServerSentEventMessage(
-            data=data, id=self.event_id, event=self.event_type, retry=self.retry_duration, sep=sep
-        ).encode()
+        pass
 
     def _call_next(self) -> bytes:
-        try:
-            return next(self.iterator)
-        except StopIteration as e:
-            raise ValueError from e
+        pass
 
     async def _async_generator(self) -> AsyncGenerator[bytes, None]:
-        while True:
-            try:
-                yield await sync_to_thread(self._call_next)
-            except ValueError:
-                async for value in self.content_async_iterator:
-                    yield self.ensure_bytes(value, DEFAULT_SEPARATOR)
-                break
+        pass
 
 
 @dataclass
@@ -152,41 +135,15 @@ class ASGIStreamingSSEResponse(ASGIStreamingResponse):
 
     async def _send(self, send: Send, payload: bytes) -> None:
         """Send a body chunk with lock for concurrent ping/stream safety."""
-        if self._send_lock is None:
-            raise RuntimeError("_send called without a send lock; ping_interval must be set")
-        async with self._send_lock:
-            await send({"type": "http.response.body", "body": payload, "more_body": True})
+        pass
 
     async def _ping(self, send: Send, stop_event: anyio.Event) -> None:
         """Send SSE comment keepalive pings at the configured interval."""
-        if self._ping_interval is None:
-            raise RuntimeError("_ping called without a ping interval configured")
-        while not stop_event.is_set():
-            with anyio.move_on_after(self._ping_interval):
-                await stop_event.wait()
-            if not stop_event.is_set():
-                await self._send(send, b": ping\r\n\r\n")
+        pass
 
     async def send_body(self, send: Send, receive: Receive) -> None:
         """Emit the response body, with optional keepalive pings."""
-        if self._ping_interval is None:
-            await super().send_body(send, receive)
-            return
-
-        stop_event = anyio.Event()
-
-        async with anyio.create_task_group() as tg:
-            tg.start_soon(partial(self._listen_for_disconnect, tg.cancel_scope, receive))
-            tg.start_soon(self._ping, send, stop_event)
-
-            async for chunk in self.iterator:
-                data = chunk if isinstance(chunk, bytes) else chunk.encode(self.encoding)
-                await self._send(send, data)
-
-            stop_event.set()
-            tg.cancel_scope.cancel()
-
-        await send({"type": "http.response.body", "body": b"", "more_body": False})
+        pass
 
 
 class ServerSentEvent(Stream):

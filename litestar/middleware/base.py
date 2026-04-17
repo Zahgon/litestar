@@ -138,15 +138,7 @@ class AbstractMiddleware:
         original__call__ = cls.__call__
 
         async def wrapped_call(self: AbstractMiddleware, scope: Scope, receive: Receive, send: Send) -> None:
-            if should_bypass_middleware(
-                scope=scope,
-                scopes=self.scopes,
-                exclude_path_pattern=self.exclude_pattern,
-                exclude_opt_key=self.exclude_opt_key,
-            ):
-                await self.app(scope, receive, send)
-            else:
-                await original__call__(self, scope, receive, send)  # pyright: ignore[reportArgumentType]
+            pass
 
         # https://github.com/python/mypy/issues/2427#issuecomment-384229898
         setattr(cls, "__call__", wrapped_call)

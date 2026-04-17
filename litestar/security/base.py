@@ -85,33 +85,7 @@ class AbstractSecurityConfig(ABC, Generic[UserType, AuthType]):
         Returns:
             The :class:`AppConfig <.config.app.AppConfig>`.
         """
-        app_config.middleware.insert(0, self.middleware)
-
-        if app_config.openapi_config:
-            app_config.openapi_config = copy(app_config.openapi_config)
-            if isinstance(app_config.openapi_config.components, list):
-                app_config.openapi_config.components.append(self.openapi_components)
-            else:
-                app_config.openapi_config.components = [self.openapi_components, app_config.openapi_config.components]
-
-            if isinstance(app_config.openapi_config.security, list):
-                app_config.openapi_config.security.append(self.security_requirement)
-            else:
-                app_config.openapi_config.security = [self.security_requirement]
-
-        if self.guards:
-            app_config.guards.extend(self.guards)
-
-        if self.dependencies:
-            app_config.dependencies.update(self.dependencies)
-
-        if self.route_handlers:
-            app_config.route_handlers.extend(self.route_handlers)
-
-        if self.type_encoders is None:
-            self.type_encoders = app_config.type_encoders
-
-        return app_config
+        pass
 
     def create_response(
         self,

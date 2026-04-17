@@ -20,13 +20,7 @@ T = TypeVar("T")
 
 
 def _dec_pydantic_v2(model_type: type[pydantic.BaseModel], value: Any, strict: bool) -> pydantic.BaseModel:
-    try:
-        return model_type.model_validate(value, strict=strict)
-    except pydantic.ValidationError as e:
-        hide_input = model_type.model_config.get("hide_input_in_errors", False)
-        raise ExtendedMsgSpecValidationError(
-            errors=cast("list[dict[str, Any]]", e.errors(include_input=not hide_input))
-        ) from e
+    pass
 
 
 _base_encoders: dict[Any, Callable[[Any], Any]] = {
@@ -37,7 +31,7 @@ _base_encoders: dict[Any, Callable[[Any], Any]] = {
 
 
 def is_pydantic_v2_model_class(annotation: Any) -> TypeGuard[type[pydantic.BaseModel]]:  # pyright: ignore[reportInvalidTypeForm]
-    return is_class_and_subclass(annotation, pydantic.BaseModel)  # pyright: ignore[reportOptionalMemberAccess]
+    pass
 
 
 class PydanticInitPlugin(InitPlugin):
@@ -110,7 +104,7 @@ class PydanticInitPlugin(InitPlugin):
 
     @classmethod
     def decoders(cls, validate_strict: bool = False) -> list[tuple[Callable[[Any], bool], Callable[[Any, Any], Any]]]:
-        return [(is_pydantic_v2_model_class, partial(_dec_pydantic_v2, strict=validate_strict))]
+        pass
 
     @staticmethod
     def _create_pydantic_v2_encoders(
@@ -146,21 +140,4 @@ class PydanticInitPlugin(InitPlugin):
         return encoders
 
     def on_app_init(self, app_config: AppConfig) -> AppConfig:
-        app_config.type_encoders = {
-            **self.encoders(
-                prefer_alias=self.prefer_alias,
-                exclude=self.exclude,
-                exclude_defaults=self.exclude_defaults,
-                exclude_none=self.exclude_none,
-                exclude_unset=self.exclude_unset,
-                include=self.include,
-                round_trip=self.round_trip,
-            ),
-            **(app_config.type_encoders or {}),
-        }
-        app_config.type_decoders = [
-            *self.decoders(validate_strict=self.validate_strict),
-            *(app_config.type_decoders or []),
-        ]
-
-        return app_config
+        pass

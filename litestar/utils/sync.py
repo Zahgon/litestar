@@ -65,17 +65,10 @@ class AsyncIteratorWrapper(Generic[T]):
         self.generator = self._async_generator()
 
     def _call_next(self) -> T:
-        try:
-            return next(self.iterator)
-        except StopIteration as e:
-            raise ValueError from e
+        pass
 
     async def _async_generator(self) -> AsyncGenerator[T, None]:
-        while True:
-            try:
-                yield await sync_to_thread(self._call_next)
-            except ValueError:
-                return
+        pass
 
     def __aiter__(self) -> AsyncIteratorWrapper[T]:
         return self

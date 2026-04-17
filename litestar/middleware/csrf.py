@@ -153,10 +153,7 @@ class CSRFMiddleware(MiddlewareProtocol):
             Returns:
                 None
             """
-            if csrf_cookie is None and message["type"] == "http.response.start":
-                message.setdefault("headers", [])
-                self._set_cookie_if_needed(message=message, token=token)
-            await send(message)
+            pass
 
         return send_wrapper
 
@@ -175,19 +172,8 @@ class CSRFMiddleware(MiddlewareProtocol):
 
     def _decode_csrf_token(self, token: str) -> str | None:
         """Decode a CSRF token and validate its HMAC."""
-        if len(token) < CSRF_SECRET_LENGTH + 1:
-            return None
-
-        token_secret = token[:CSRF_SECRET_LENGTH]
-        existing_hash = token[CSRF_SECRET_LENGTH:]
-        expected_hash = generate_csrf_hash(token=token_secret, secret=self.config.secret)
-        return token_secret if compare_digest(existing_hash, expected_hash) else None
+        pass
 
     def _csrf_tokens_match(self, request_csrf_token: str, cookie_csrf_token: str) -> bool:
         """Take the CSRF tokens from the request and the cookie and verify both are valid and identical."""
-        decoded_request_token = self._decode_csrf_token(request_csrf_token)
-        decoded_cookie_token = self._decode_csrf_token(cookie_csrf_token)
-        if decoded_request_token is None or decoded_cookie_token is None:
-            return False
-
-        return compare_digest(decoded_request_token, decoded_cookie_token)
+        pass

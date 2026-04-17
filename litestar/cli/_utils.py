@@ -213,24 +213,7 @@ class LitestarExtensionGroup(LitestarGroup):
             self.add_command(command, entry_point.name)
 
     def _prepare(self, ctx: Context) -> None:
-        if self._prepare_done:
-            return
-
-        if isinstance(ctx.obj, LitestarEnv):
-            env: LitestarEnv | None = ctx.obj
-        else:
-            try:
-                app_path = ctx.params.get("app_path")
-                app_dir = ctx.params.get("app_dir")
-                env = ctx.obj = LitestarEnv.from_env(app_path, app_dir)
-            except LitestarCLIException:
-                env = None
-
-        if env:
-            for plugin in env.app.plugins.cli:
-                plugin.on_cli_init(self)
-
-        self._prepare_done = True
+        pass
 
     def make_context(  # type: ignore[override]
         self,
@@ -239,18 +222,14 @@ class LitestarExtensionGroup(LitestarGroup):
         parent: Context | None = None,
         **extra: Any,
     ) -> Context:
-        ctx = super().make_context(info_name, args, parent, **extra)
-        self._prepare(ctx)
-        return ctx
+        pass
 
     def list_commands(self, ctx: Context) -> list[str]:
-        self._prepare(ctx)
-        return super().list_commands(ctx)
+        pass
 
     def format_help(self, ctx: Context, formatter: Any) -> None:
         """Override format_help to ensure plugins are loaded before rendering help."""
-        self._prepare(ctx)
-        return super().format_help(ctx, formatter)  # type: ignore[arg-type]
+        pass
 
 
 def _inject_args(func: Callable[P, T]) -> Callable[P, T]:
@@ -259,41 +238,17 @@ def _inject_args(func: Callable[P, T]) -> Callable[P, T]:
 
     @wraps(func)
     def wrapped(ctx: Context, /, *args: P.args, **kwargs: P.kwargs) -> T:
-        needs_app = "app" in params
-        needs_env = "env" in params
-        if needs_env or needs_app:
-            # only resolve this if actually requested. Commands that don't need an env or app should be able to run
-            # without
-            if not isinstance(ctx.obj, LitestarEnv):
-                ctx.obj = ctx.obj()
-            env = ctx.ensure_object(LitestarEnv)
-            if needs_app:
-                kwargs["app"] = env.app
-            if needs_env:
-                kwargs["env"] = env
-
-        if "ctx" in params:
-            kwargs["ctx"] = ctx
-
-        return func(*args, **kwargs)
+        pass
 
     return pass_context(wrapped)
 
 
 def _wrap_commands(commands: Iterable[Command]) -> None:
-    for command in commands:
-        if hasattr(command, "commands"):
-            _wrap_commands(command.commands.values())  # pyright: ignore[reportAttributeAccessIssue]
-        elif command.callback:
-            command.callback = _inject_args(command.callback)
+    pass
 
 
 def _bool_from_env(key: str, default: bool = False) -> bool:
-    value = getenv(key)
-    if not value:
-        return default
-    value = value.lower()
-    return value in ("true", "1")
+    pass
 
 
 def _validate_app_path(app_path: str) -> tuple[ModuleType, str]:

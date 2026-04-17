@@ -61,11 +61,7 @@ def create_etag_for_file(path: PathType, modified_time: float | None, file_size:
     Returns:
         An etag.
     """
-    check = adler32(str(path).encode("utf-8")) & 0xFFFFFFFF
-    parts = [str(file_size), str(check)]
-    if modified_time:
-        parts.insert(0, str(modified_time))
-    return f'"{"-".join(parts)}"'
+    pass
 
 
 class ASGIFileResponse(ASGIStreamingResponse):
@@ -155,18 +151,7 @@ class ASGIFileResponse(ASGIStreamingResponse):
         Returns:
             None
         """
-        if self.content_length < self.chunk_size:
-            # no need to chunk and stream; read and send the whole thing in one go
-            body_event: HTTPResponseBodyEvent = {
-                "type": "http.response.body",
-                "body": await self._file_system.read_bytes(self.file_path),
-                "more_body": False,
-            }
-            await send(body_event)
-
-        else:
-            self.iterator = self._file_system.iter(self.file_path, chunksize=self.chunk_size)
-            await super().send_body(send=send, receive=receive)
+        pass
 
     async def start_response(self, send: Send) -> None:
         """Emit the start event of the response. This event includes the headers and status codes.
@@ -177,39 +162,7 @@ class ASGIFileResponse(ASGIStreamingResponse):
         Returns:
             None
         """
-
-        try:
-            if self.file_info is None:
-                file_info = await self._file_system.info(self.file_path)
-            else:
-                file_info = self.file_info
-        except FileNotFoundError as e:
-            raise ImproperlyConfiguredException(f"{self.file_path} does not exist") from e
-
-        if file_info["type"] != "file":
-            raise ImproperlyConfiguredException(f"{self.file_path} is not a file")
-
-        self.content_length = file_info["size"]
-
-        self.headers.setdefault("content-length", str(self.content_length))
-        mtime = file_info.get("mtime")
-
-        if mtime is not None:
-            self.headers.setdefault("last-modified", formatdate(mtime, usegmt=True))
-
-        if self.etag:
-            self.headers.setdefault("etag", self.etag.to_header())
-        else:
-            self.headers.setdefault(
-                "etag",
-                create_etag_for_file(
-                    path=self.file_path,
-                    modified_time=mtime,
-                    file_size=file_info["size"],
-                ),
-            )
-
-        await super().start_response(send=send)
+        pass
 
 
 class File(Response):

@@ -96,7 +96,7 @@ class WebsocketRouteHandler(BaseRouteHandler):
         Returns:
             The default :class:`WebSocket <.connection.WebSocket>` class for the route handler.
         """
-        return self.websocket_class
+        pass
 
     @property
     def websocket_class(self) -> type[WebSocket]:
@@ -104,26 +104,10 @@ class WebsocketRouteHandler(BaseRouteHandler):
 
     def _validate_handler_function(self) -> None:
         """Validate the route handler function once it's set by inspecting its return annotations."""
-        super()._validate_handler_function()
-
-        if not self.parsed_fn_signature.return_type.is_subclass_of(NoneType):
-            raise ImproperlyConfiguredException(f"{self}: WebSocket handlers must return 'None'")
-
-        if "socket" not in self.parsed_fn_signature.parameters:
-            raise ImproperlyConfiguredException(f"{self}: WebSocket handlers must define a 'socket' parameter")
-
-        for param in ("request", "body", "data"):
-            if param in self.parsed_fn_signature.parameters:
-                raise ImproperlyConfiguredException(
-                    f"{self}: The {param} kwarg is not supported with websocket handlers"
-                )
-
-        if not is_async_callable(self.fn):
-            raise ImproperlyConfiguredException(f"{self}: WebSocket handler functions must be asynchronous")
+        pass
 
     def on_registration(self, route: BaseRoute, app: Litestar) -> None:
-        super().on_registration(route=route, app=app)
-        self._kwargs_model = self._create_kwargs_model(path_parameters=route.path_parameters)
+        pass
 
     async def handle(self, connection: WebSocket[Any, Any, Any]) -> None:
         """ASGI app that creates a WebSocket from the passed in args, and then awaits the handler function.

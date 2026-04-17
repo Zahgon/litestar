@@ -230,7 +230,7 @@ class BaseRouteHandler:
     @property
     def handler_id(self) -> str:
         """A unique identifier used for generation of DTOs."""
-        return f"{self!s}::{id(self)}"
+        pass
 
     @property
     def default_deserializer(self) -> Callable[[Any, Any], Any]:
@@ -260,15 +260,7 @@ class BaseRouteHandler:
             A signature model for the route handler.
 
         """
-        if self._resolved_signature_model is Empty:
-            self._resolved_signature_model = SignatureModel.create(
-                dependency_name_set=set(self.dependencies.keys()),
-                fn=cast("AnyCallable", self.fn),
-                parsed_signature=self.parsed_fn_signature,
-                data_dto=self.data_dto,
-                type_decoders=self.type_decoders,
-            )
-        return self._resolved_signature_model
+        pass
 
     @property
     def parsed_fn_signature(self) -> ParsedSignature:
@@ -279,22 +271,15 @@ class BaseRouteHandler:
         Returns:
             A ParsedSignature instance
         """
-        if self._parsed_fn_signature is Empty:
-            self._parsed_fn_signature = ParsedSignature.from_fn(unwrap_partial(self.fn), self.signature_namespace)
-
-        return self._parsed_fn_signature
+        pass
 
     @property
     def parsed_return_field(self) -> FieldDefinition:
-        if self._parsed_return_field is Empty:
-            self._parsed_return_field = self.parsed_fn_signature.return_type
-        return self._parsed_return_field
+        pass
 
     @property
     def parsed_data_field(self) -> FieldDefinition | None:
-        if self._parsed_data_field is Empty:
-            self._parsed_data_field = self.parsed_fn_signature.parameters.get("data")
-        return self._parsed_data_field
+        pass
 
     @property
     def handler_name(self) -> str:
@@ -306,7 +291,7 @@ class BaseRouteHandler:
         Returns:
             Name of the handler function
         """
-        return get_name(unwrap_partial(self.fn))
+        pass
 
     def _raise_not_registered(self) -> NoReturn:
         raise LitestarException(
@@ -321,8 +306,7 @@ class BaseRouteHandler:
         Returns:
             A dict of type encoders
         """
-
-        return self.type_encoders
+        pass
 
     @deprecated("3.0", removal_in="4.0", alternative=".type_decoders attribute")
     def resolve_type_decoders(self) -> TypeDecodersSequence:
@@ -331,28 +315,21 @@ class BaseRouteHandler:
         Returns:
             A dict of type encoders
         """
-
-        return self.type_decoders
+        pass
 
     @deprecated("3.0", removal_in="4.0", alternative=".parameter_field_definitions property")
     def resolve_layered_parameters(self) -> dict[str, FieldDefinition]:
-        return self.parameter_field_definitions
+        pass
 
     @property
     def parameter_field_definitions(self) -> dict[str, FieldDefinition]:
         """Return all parameters declared above the handler."""
-        if self._parameter_field_definitions is Empty:
-            self._parameter_field_definitions = {
-                key: FieldDefinition.from_kwarg(name=key, annotation=parameter.annotation, kwarg_definition=parameter)
-                for key, parameter in self.parameters.items()
-            }
-        return self._parameter_field_definitions
+        pass
 
     @deprecated("3.0", removal_in="4.0", alternative=".guards attribute")
     def resolve_guards(self) -> tuple[Guard, ...]:
         """Return all guards in the handlers scope, starting from highest to current layer."""
-
-        return self.guards
+        pass
 
     @deprecated("3.0", removal_in="4.0", alternative=".dependencies attribute")
     def resolve_dependencies(self) -> dict[str, Provide]:
@@ -361,36 +338,12 @@ class BaseRouteHandler:
         return self.dependencies
 
     def _finalize_dependencies(self, app: Litestar) -> None:
-        dependencies: dict[str, Provide] = {}
-
-        # keep track of which providers are available for each dependency
-        provider_keys: dict[Any, str] = {}
-
-        for key, provider in self.dependencies.items():
-            # ensure that if a provider for this dependency has already been registered,
-            # registering this provider again is only allowed as an override, i.e. with
-            # the same key
-            if (existing_key := provider_keys.get(provider.dependency)) and existing_key != key:
-                raise ImproperlyConfiguredException(
-                    f"Provider for {provider.dependency!r} with key {key!r} is already defined under a different key "
-                    f"{existing_key!r}. If you wish to override a provider, it must have the same key."
-                )
-
-            provider.finalize(
-                plugins=app.plugins,
-                signature_namespace=self.signature_namespace,
-                data_dto=self.data_dto,
-                dependency_keys=set(self.dependencies),
-                type_decoders=self.type_decoders,
-            )
-            provider_keys[provider.dependency] = key
-            dependencies[key] = provider
+        pass
 
     @deprecated("3.0", removal_in="4.0", alternative=".middleware attribute")
     def resolve_middleware(self) -> tuple[Middleware, ...]:
         """Return registered middlewares"""
-
-        return self.middleware
+        pass
 
     @deprecated("3.0", removal_in="4.0", alternative=".exception_handlers attribute")
     def resolve_exception_handlers(self) -> ExceptionHandlersMap:
@@ -398,14 +351,12 @@ class BaseRouteHandler:
 
         This method is memoized so the computation occurs only once.
         """
-
-        return self.exception_handlers
+        pass
 
     @deprecated("3.0", removal_in="4.0", alternative=".signature_namespace attribute")
     def resolve_signature_namespace(self) -> dict[str, Any]:
         """Build the route handler signature namespace dictionary by going from top to bottom"""
-
-        return self.signature_namespace
+        pass
 
     @property
     def data_dto(self) -> type[AbstractDTO] | None:
@@ -415,7 +366,7 @@ class BaseRouteHandler:
 
     @deprecated("3.0", removal_in="4.0", alternative=".data_dto attribute")
     def resolve_data_dto(self) -> type[AbstractDTO] | None:
-        return self.data_dto
+        pass
 
     def _resolve_data_dto(self, app: Litestar) -> type[AbstractDTO] | None:
         """Resolve the data_dto by starting from the route handler and moving up.
@@ -425,28 +376,7 @@ class BaseRouteHandler:
         Returns:
             An optional :class:`DTO type <.dto.base_dto.AbstractDTO>`
         """
-        data_dto: type[AbstractDTO] | None = None
-        if (_data_dto := self._dto) is not Empty:
-            data_dto = _data_dto
-        elif self.parsed_data_field and (
-            plugin_for_data_type := next(
-                (
-                    plugin
-                    for plugin in app.plugins.serialization
-                    if self.parsed_data_field.match_predicate_recursively(plugin.supports_type)
-                ),
-                None,
-            )
-        ):
-            data_dto = plugin_for_data_type.create_dto_for_type(self.parsed_data_field)
-
-        if self.parsed_data_field and data_dto:
-            data_dto.create_for_field_definition(
-                field_definition=self.parsed_data_field,
-                handler_id=self.handler_id,
-            )
-
-        return data_dto
+        pass
 
     @property
     def return_dto(self) -> type[AbstractDTO] | None:
@@ -456,7 +386,7 @@ class BaseRouteHandler:
 
     @deprecated("3.0", removal_in="4.0", alternative=".return_dto attribute")
     def resolve_return_dto(self) -> type[AbstractDTO] | None:
-        return self.return_dto
+        pass
 
     def _resolve_return_dto(self, app: Litestar, data_dto: type[AbstractDTO] | None) -> type[AbstractDTO] | None:
         """Resolve the return_dto by starting from the route handler and moving up.
@@ -466,30 +396,7 @@ class BaseRouteHandler:
         Returns:
             An optional :class:`DTO type <.dto.base_dto.AbstractDTO>`
         """
-        if (_return_dto := self._return_dto) is not Empty:
-            return_dto: type[AbstractDTO] | None = _return_dto
-        elif plugin_for_return_type := next(
-            (
-                plugin
-                for plugin in app.plugins.serialization
-                if self.parsed_return_field.match_predicate_recursively(plugin.supports_type)
-            ),
-            None,
-        ):
-            return_dto = plugin_for_return_type.create_dto_for_type(self.parsed_return_field)
-        else:
-            return_dto = data_dto
-
-        if return_dto and return_dto.is_supported_model_type_field(self.parsed_return_field):
-            return_dto.create_for_field_definition(
-                field_definition=self.parsed_return_field,
-                handler_id=self.handler_id,
-            )
-            resolved_return_dto = return_dto
-        else:
-            resolved_return_dto = None
-
-        return resolved_return_dto
+        pass
 
     async def authorize_connection(self, connection: ASGIConnection) -> None:
         """Ensure the connection is authorized by running all the route guards in scope."""
@@ -506,22 +413,11 @@ class BaseRouteHandler:
         Returns:
             None
         """
-
-        self._dto = self._resolve_data_dto(app=app)
-        self._return_dto = self._resolve_return_dto(app=app, data_dto=self._dto)
-
-        self._validate_handler_function()
-        self._finalize_dependencies(app=app)
-
-        check_middleware_constraints(self.middleware)
+        pass
 
     def _validate_handler_function(self) -> None:
         """Validate the route handler function once set by inspecting its return annotations."""
-        if self.parsed_data_field is not None and self.parsed_data_field.is_subclass_of(DTOData) and not self.data_dto:
-            raise ImproperlyConfiguredException(
-                f"Handler function {self.handler_name} has a data parameter that is a subclass of DTOData but no "
-                "DTO has been registered for it."
-            )
+        pass
 
     def __str__(self) -> str:
         """Return a unique identifier for the route handler.

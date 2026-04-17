@@ -39,9 +39,7 @@ def default_cache_key_builder(request: Request[Any, Any, Any]) -> str:
     Returns:
         A combination of url path and query parameters
     """
-    query_params: list[tuple[str, Any]] = list(request.query_params.dict().items())
-    query_params.sort(key=lambda x: x[0])
-    return request.method + request.url.path + urlencode(query_params, doseq=True)
+    pass
 
 
 def default_do_cache_predicate(_: HTTPScope, status_code: int) -> bool:
@@ -54,10 +52,7 @@ def default_do_cache_predicate(_: HTTPScope, status_code: int) -> bool:
     Returns:
         A boolean indicating whether the response should be cached.
     """
-    return HTTP_200_OK <= status_code < HTTP_300_MULTIPLE_CHOICES or status_code in (
-        HTTP_301_MOVED_PERMANENTLY,
-        HTTP_308_PERMANENT_REDIRECT,
-    )
+    pass
 
 
 @dataclass

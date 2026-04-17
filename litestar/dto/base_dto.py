@@ -157,13 +157,7 @@ class AbstractDTO(Generic[T]):
         Returns:
             Whether the type of the field definition is supported by the DTO.
         """
-        return field_definition.is_subclass_of(cls.model_type) or (
-            field_definition.origin
-            and any(
-                cls.resolve_model_type(inner_field).is_subclass_of(cls.model_type)
-                for inner_field in field_definition.inner_types
-            )
-        )
+        pass
 
     @classmethod
     def create_for_field_definition(
@@ -182,38 +176,7 @@ class AbstractDTO(Generic[T]):
         Returns:
             None
         """
-
-        if handler_id not in cls._dto_backends:
-            cls._dto_backends[handler_id] = {}
-
-        backend_context = cls._dto_backends[handler_id]
-        key = "data_backend" if field_definition.name == "data" else "return_backend"
-
-        if key not in backend_context:
-            model_type_field_definition = cls.resolve_model_type(field_definition=field_definition)
-            wrapper_attribute_name: str | None = None
-
-            if not model_type_field_definition.is_subclass_of(cls.model_type):
-                if resolved_generic_result := cls.resolve_generic_wrapper_type(
-                    field_definition=model_type_field_definition
-                ):
-                    model_type_field_definition, field_definition, wrapper_attribute_name = resolved_generic_result
-                else:
-                    raise InvalidAnnotationException(
-                        f"DTO narrowed with '{cls.model_type}', handler type is '{field_definition.annotation}'"
-                    )
-
-            if backend_cls is None:
-                backend_cls = DTOCodegenBackend if cls.config.experimental_codegen_backend is not False else DTOBackend
-
-            backend_context[key] = backend_cls(  # type: ignore[literal-required]
-                dto_factory=cls,
-                field_definition=field_definition,
-                model_type=model_type_field_definition.annotation,
-                wrapper_attribute_name=wrapper_attribute_name,
-                is_data_field=field_definition.name == "data",
-                handler_id=handler_id,
-            )
+        pass
 
     @classmethod
     def create_openapi_schema(
@@ -263,55 +226,15 @@ class AbstractDTO(Generic[T]):
         Returns:
             The data model type.
         """
-        if field_definition.origin and (
-            inner_fields := [
-                inner_field
-                for inner_field in field_definition.inner_types
-                if cls.resolve_model_type(inner_field).is_subclass_of(cls.model_type)
-            ]
-        ):
-            inner_field = inner_fields[0]
-            model_field_definition = cls.resolve_model_type(inner_field)
-
-            for attr, attr_type in cls.get_model_type_hints(field_definition.origin).items():
-                if isinstance(attr_type.annotation, TypeVar) or any(
-                    isinstance(t.annotation, TypeVar) for t in attr_type.inner_types
-                ):
-                    if attr_type.is_non_string_collection:
-                        # the inner type of the collection type is the type var, so we need to specialize the
-                        # collection type with the DTO supported type.
-                        specialized_annotation = attr_type.safe_generic_origin[model_field_definition.annotation]
-                        return model_field_definition, FieldDefinition.from_annotation(specialized_annotation), attr
-                    return model_field_definition, inner_field, attr
-        return None
+        pass
 
     @staticmethod
     def get_model_namespace(model_type: type[Any], namespace: dict[str, Any] | None = None) -> dict[str, Any]:
-        namespace = namespace or {}
-        namespace.update(vars(typing))
-        namespace.update(
-            {
-                "TypeEncodersMap": TypeEncodersMap,
-                "DTOConfig": DTOConfig,
-                "RenameStrategy": RenameStrategy,
-                "RequestEncodingType": RequestEncodingType,
-            }
-        )
-
-        if model_module := getmodule(model_type):
-            namespace.update(vars(model_module))
-        return namespace
+        pass
 
     @classmethod
     def get_property_fields(cls, model_type: type[Any]) -> dict[str, FieldDefinition]:
-        return {
-            name: dataclasses.replace(
-                ParsedSignature.from_fn(attr.fget, cls.get_model_namespace(model_type)).return_type,
-                name=name,
-            )
-            for name, attr in vars(model_type).items()
-            if isinstance(attr, property) and attr.fget is not None
-        }
+        pass
 
     @staticmethod
     def get_model_type_hints(
@@ -326,12 +249,7 @@ class AbstractDTO(Generic[T]):
         Returns:
             Parsed type hints for ``model_type`` resolved within the scope of its module.
         """
-        namespace = AbstractDTO.get_model_namespace(model_type, namespace)
-
-        return {
-            k: FieldDefinition.from_kwarg(annotation=v, name=k)
-            for k, v in get_type_hints(model_type, localns=namespace, include_extras=True).items()
-        }
+        pass
 
     @staticmethod
     def get_dto_config_from_annotated_type(field_definition: FieldDefinition) -> DTOConfig | None:
@@ -343,7 +261,7 @@ class AbstractDTO(Generic[T]):
         Returns:
             The type and config object extracted from the annotation.
         """
-        return next((item for item in field_definition.metadata if isinstance(item, DTOConfig)), None)
+        pass
 
     @classmethod
     def resolve_model_type(cls, field_definition: FieldDefinition) -> FieldDefinition:
@@ -355,22 +273,4 @@ class AbstractDTO(Generic[T]):
         Returns:
             A :class:`FieldDefinition <.typing.FieldDefinition>` that represents the data model type.
         """
-        if field_definition.is_optional:
-            return cls.resolve_model_type(
-                next(t for t in field_definition.inner_types if not t.is_subclass_of(NoneType))
-            )
-
-        if field_definition.is_subclass_of(DTOData):
-            return cls.resolve_model_type(field_definition.inner_types[0])
-
-        if field_definition.is_collection:
-            if field_definition.is_mapping:
-                return cls.resolve_model_type(field_definition.inner_types[1])
-
-            if field_definition.is_tuple:
-                if any(t is Ellipsis for t in field_definition.args):
-                    return cls.resolve_model_type(field_definition.inner_types[0])
-            elif field_definition.is_non_string_collection:
-                return cls.resolve_model_type(field_definition.inner_types[0])
-
-        return field_definition
+        pass

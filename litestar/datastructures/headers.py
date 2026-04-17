@@ -188,10 +188,7 @@ class MutableScopeHeaders(MutableMapping):
         Returns:
             None
         """
-        existing = self.get(key)
-        if existing is not None:
-            value = ",".join([*existing.split(","), value])
-        self[key] = value
+        pass
 
     def __getitem__(self, key: str) -> str:
         """Get the first header matching ``name``"""
@@ -202,8 +199,7 @@ class MutableScopeHeaders(MutableMapping):
         raise KeyError
 
     def _find_indices(self, key: str) -> list[int]:
-        name = key.lower()
-        return [i for i, (name_, _) in enumerate(self.headers) if name_.decode("latin-1").lower() == name]
+        pass
 
     def __setitem__(self, key: str, value: str) -> None:
         """Set a header in the scope, overwriting duplicates."""
@@ -315,31 +311,14 @@ class CacheControlHeader(Header):
         Returns:
             An instance of ``CacheControlHeader``
         """
-
-        kwargs: dict[str, Any] = {}
-        field_names = {f.name for f in fields(cls)}
-        for cc_item in (stripped for v in header_value.split(",") if (stripped := v.strip())):
-            key, *value = cc_item.split("=", maxsplit=1)
-            key = key.replace("-", "_")
-            if key not in field_names:
-                raise ImproperlyConfiguredException("Invalid cache-control header")
-            if not value:
-                kwargs[key] = True
-            else:
-                (kwargs[key],) = value
-
-        try:
-            return msgspec.convert(kwargs, CacheControlHeader, strict=False)
-        except msgspec.ValidationError as exc:
-            raise ImproperlyConfiguredException from exc
+        pass
 
     @classmethod
     def prevent_storing(cls) -> "CacheControlHeader":
         """Create a ``cache-control`` header with the ``no-store`` directive which indicates that any caches of any kind
         (private or shared) should not store this response.
         """
-
-        return cls(no_store=True)
+        pass
 
 
 @dataclass
@@ -361,14 +340,7 @@ class ETag(Header):
 
         Note that this will unquote etag-values
         """
-        match = ETAG_RE.match(header_value)
-        if not match:
-            raise ImproperlyConfiguredException
-        weak, value = match.group(1, 2)
-        try:
-            return cls(weak=bool(weak), value=value)
-        except ValueError as exc:
-            raise ImproperlyConfiguredException from exc
+        pass
 
     def __post_init__(self) -> None:
         if self.documentation_only is False and self.value is None:
@@ -397,23 +369,7 @@ class MediaTypeHeader:
     def priority(self) -> tuple[int, int]:
         # Use fixed point values with two decimals to avoid problems
         # when comparing float values
-        quality = 100
-        qparam = self.params.get("q")
-        if qparam is not None:
-            with suppress(ValueError):
-                quality = int(100 * float(qparam))
-
-        if self.maintype == "*":
-            specificity = 0
-        elif self.subtype == "*":
-            specificity = 1
-        elif not self.params or (qparam is not None and len(self.params) == 1):
-            # no params or 'q' is the only one which we ignore
-            specificity = 2
-        else:
-            specificity = 3
-
-        return quality, specificity
+        pass
 
     def match(self, other: "MediaTypeHeader") -> bool:
         return next(
@@ -461,20 +417,7 @@ class Accept:
             they are replaced with the corresponding part of the accepted type. Otherwise the
             provided type is returned as-is.
         """
-        types = [MediaTypeHeader(t) for t in provided_types]
-
-        for accepted in self._accepted_types:
-            for provided in types:
-                if provided.match(accepted):
-                    # Return the accepted type with wildcards replaced
-                    # by concrete parts from the provided type
-                    result = copy(provided)
-                    if result.subtype == "*":
-                        result.subtype = accepted.subtype
-                    if result.maintype == "*":
-                        result.maintype = accepted.maintype
-                    return str(result)
-        return default
+        pass
 
     def accepts(self, media_type: str) -> bool:
         """Check if the request accepts the specified media type.
@@ -487,4 +430,4 @@ class Accept:
         Returns:
             True if the request accepts ``media_type``.
         """
-        return self.best_match([media_type]) == media_type
+        pass

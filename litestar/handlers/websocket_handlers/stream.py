@@ -85,33 +85,10 @@ async def send_websocket_stream(
         # wrap 'send_stream' and disconnect listener, so they'll cancel the other once
         # one of the finishes
         async def wrapped_stream() -> None:
-            await send_stream()
-            # stream exhausted, we can stop listening for a disconnect
-            tg.cancel_scope.cancel()
+            pass
 
         async def disconnect_listener() -> None:
-            try:
-                # run this in a loop - we might receive other data than disconnects.
-                # listen_for_disconnect is explicitly not safe when consuming WS data
-                # in other places, so discarding that data here is fine
-                while True:
-                    await socket.receive_data("text")
-                    if warn_on_data_discard:
-                        warnings.warn(
-                            "received data from websocket while listening for client "
-                            "disconnect in a websocket_stream. listen_for_disconnect "
-                            "is not safe to use when attempting to receive data from "
-                            "the same socket concurrently with a websocket_stream. set "
-                            "listen_for_disconnect=False if you're attempting to "
-                            "receive data from this socket or set "
-                            "warn_on_data_discard=False to disable this warning",
-                            stacklevel=2,
-                            category=LitestarWarning,
-                        )
-
-            except WebSocketDisconnect:
-                # client disconnected, we can stop streaming
-                tg.cancel_scope.cancel()
+            pass
 
         async with anyio.create_task_group() as tg:
             tg.start_soon(wrapped_stream)
@@ -213,87 +190,7 @@ class WebSocketStreamHandler(WebsocketRouteHandler):
     _ws_stream_options: _WebSocketStreamOptions
 
     def on_registration(self, route: BaseRoute, app: Litestar) -> None:
-        self._ws_stream_options = self.opt["stream_options"]
-
-        parsed_handler_signature = parsed_stream_fn_signature = ParsedSignature.from_fn(
-            self.fn, self.signature_namespace
-        )
-
-        if not parsed_stream_fn_signature.return_type.is_subclass_of(AsyncGenerator):
-            raise ImproperlyConfiguredException(
-                f"Route handler {self}: 'websocket_stream' handlers must return an "
-                f"'AsyncGenerator', not {type(parsed_stream_fn_signature.return_type.raw)!r}"
-            )
-
-        # important not to use 'self._ws_stream_options.generator_fn' here; This would
-        # break in cases the decorator has been used inside a controller, as it would
-        # be a reference to the unbound method. The bound method is patched in later
-        # after the controller has been initialized. This is a workaround that should
-        # go away with v3.0's static handlers
-        stream_fn = cast("Callable[..., AsyncGenerator[Any, Any]]", self.fn)
-
-        # construct a fake signature for the kwargs modelling, using the generator
-        # function passed to the handler as a base, to include all the dependencies,
-        # params, injection kwargs, etc. + 'socket', so DI works properly, but the
-        # signature looks to kwargs/signature modelling like a plain '@websocket'
-        # handler that returns 'None'
-        parsed_handler_signature = dataclasses.replace(
-            parsed_handler_signature, return_type=FieldDefinition.from_annotation(NoneType)
-        )
-        receives_socket_parameter = "socket" in parsed_stream_fn_signature.parameters
-
-        if not receives_socket_parameter:
-            parsed_handler_signature = dataclasses.replace(
-                parsed_handler_signature,
-                parameters={
-                    **parsed_handler_signature.parameters,
-                    "socket": FieldDefinition.from_annotation("WebSocket", name="socket"),
-                },
-            )
-
-        self._parsed_fn_signature = parsed_handler_signature
-        self._parsed_return_field = parsed_stream_fn_signature.return_type.inner_types[0]
-
-        json_encoder = JsonEncoder(enc_hook=self.default_serializer)
-        self._dto = self._resolve_data_dto(app=app)
-        self._return_dto = return_dto = self._resolve_return_dto(app=app, data_dto=self._dto)
-
-        # make sure the closure doesn't capture self._ws_stream / self
-        send_mode: WebSocketMode = self._ws_stream_options.send_mode  # pyright: ignore[reportAssignmentType]
-        listen_for_disconnect = self._ws_stream_options.listen_for_disconnect
-        warn_on_data_discard = self._ws_stream_options.warn_on_data_discard
-
-        async def send_handler(socket: WebSocket, data: Any) -> None:
-            if isinstance(data, (str, bytes)):
-                await socket.send_data(data=data, mode=send_mode)
-                return
-
-            if return_dto:
-                encoded_data = return_dto(socket).data_to_encodable_type(data)
-                data = json_encoder.encode(encoded_data)
-                await socket.send_data(data=data, mode=send_mode)
-                return
-
-            data = json_encoder.encode(data)
-            await socket.send_data(data=data, mode=send_mode)
-
-        @functools.wraps(stream_fn)
-        async def handler_fn(*args: Any, socket: WebSocket, **kw: Any) -> None:
-            if receives_socket_parameter:
-                kw["socket"] = socket
-
-            await send_websocket_stream(
-                socket=socket,
-                stream=stream_fn(*args, **kw),
-                mode=send_mode,
-                close=True,
-                listen_for_disconnect=listen_for_disconnect,
-                warn_on_data_discard=warn_on_data_discard,
-                send_handler=send_handler,
-            )
-
-        self.fn = handler_fn  # pyright: ignore[reportGeneralTypeIssues]
-        super().on_registration(route, app)
+        pass
 
 
 class _WebSocketStreamOptions:

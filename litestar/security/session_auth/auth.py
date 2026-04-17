@@ -106,7 +106,7 @@ class SessionAuth(Generic[UserType, BaseSessionBackendT], AbstractSecurityConfig
         Returns:
             A subclass of :class:`BaseSessionBackend <litestar.middleware.session.base.BaseSessionBackend>`
         """
-        return self.session_backend_config._backend_class(config=self.session_backend_config)
+        pass
 
     @property
     def openapi_components(self) -> Components:
@@ -115,16 +115,7 @@ class SessionAuth(Generic[UserType, BaseSessionBackendT], AbstractSecurityConfig
         Returns:
             An :class:`Components <litestar.openapi.spec.components.Components>` instance.
         """
-        return Components(
-            security_schemes={
-                "sessionCookie": SecurityScheme(
-                    type="apiKey",
-                    name=self.session_backend_config.key,
-                    security_scheme_in="cookie",
-                    description="Session cookie authentication.",
-                )
-            }
-        )
+        pass
 
     @property
     def security_requirement(self) -> SecurityRequirement:
@@ -136,4 +127,4 @@ class SessionAuth(Generic[UserType, BaseSessionBackendT], AbstractSecurityConfig
         Returns:
             An OpenAPI 3.1 :data:`SecurityRequirement <.openapi.spec.SecurityRequirement>` dictionary.
         """
-        return {"sessionCookie": []}
+        pass

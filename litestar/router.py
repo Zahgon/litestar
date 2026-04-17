@@ -203,6 +203,4 @@ class Router:
 
     def register(self, value: ControllerRouterHandler) -> None:
         """Register a Controller, Route instance or RouteHandler on the router"""
-        if value is self:
-            raise ImproperlyConfiguredException("Cannot register a router on itself")
-        self.route_handlers = (*self.route_handlers, value)
+        pass

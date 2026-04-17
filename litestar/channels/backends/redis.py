@@ -35,12 +35,10 @@ class _LazyEvent:
 
     @property
     def _event(self) -> asyncio.Event:
-        if self.__event is None:
-            self.__event = asyncio.Event()
-        return self.__event
+        pass
 
     def set(self) -> None:
-        self._event.set()
+        pass
 
     def clear(self) -> None:
         self._event.clear()
@@ -90,30 +88,22 @@ class RedisChannelsPubSubBackend(RedisChannelsBackend):
 
     @property
     def _pub_sub(self) -> PubSub:
-        if self.__pub_sub is None:
-            self.__pub_sub = self._redis.pubsub()
-        return self.__pub_sub
+        pass
 
     async def on_startup(self) -> None:
         # this method should not do anything in this case
         pass
 
     async def on_shutdown(self) -> None:
-        await self._pub_sub.reset()
+        pass
 
     async def subscribe(self, channels: Iterable[str]) -> None:
         """Subscribe to ``channels``, and enable publishing to them"""
-        await self._pub_sub.subscribe(*channels)
-        self._has_subscribed.set()
+        pass
 
     async def unsubscribe(self, channels: Iterable[str]) -> None:
         """Stop listening for events on ``channels``"""
-        await self._pub_sub.unsubscribe(*channels)
-        # if we have no active subscriptions, or only subscriptions which are pending
-        # to be unsubscribed we consider the backend to be unsubscribed from all
-        # channels, so we reset the event
-        if not self._pub_sub.channels.keys() - self._pub_sub.pending_unsubscribe_channels:
-            self._has_subscribed.clear()
+        pass
 
     async def publish(self, data: bytes, channels: Iterable[str]) -> None:
         """Publish ``data`` to ``channels``
@@ -121,7 +111,7 @@ class RedisChannelsPubSubBackend(RedisChannelsBackend):
         .. note::
             This operation is performed atomically, using a lua script
         """
-        await self._publish_script(keys=list(set(channels)), args=[data])
+        pass
 
     async def stream_events(self) -> AsyncGenerator[tuple[str, Any], None]:
         """Return a generator, iterating over events of subscribed channels as they become available.
@@ -129,23 +119,7 @@ class RedisChannelsPubSubBackend(RedisChannelsBackend):
         If no channels have been subscribed to yet via :meth:`subscribe`, sleep for ``stream_sleep_no_subscriptions``
         milliseconds.
         """
-
-        while True:
-            await self._has_subscribed.wait()
-            message = await self._pub_sub.get_message(
-                ignore_subscribe_messages=True, timeout=self._stream_sleep_no_subscriptions
-            )
-            if message is None:
-                continue
-
-            channel: str = message["channel"].decode()
-            data: bytes = message["data"]
-            # redis handles the unsubscribing with a queue; Unsubscribing doesn't mean
-            # the unsubscribe will happen immediately after requesting it, so we could
-            # receive a message on a channel that, from a client's perspective, it's not
-            # subscribed to anymore
-            if channel.encode() in self._pub_sub.channels.keys() - self._pub_sub.pending_unsubscribe_channels:
-                yield channel, data
+        pass
 
     async def get_history(self, channel: str, limit: int | None = None) -> list[bytes]:
         """Not implemented"""
@@ -196,14 +170,11 @@ class RedisChannelsStreamBackend(RedisChannelsBackend):
 
     async def subscribe(self, channels: Iterable[str]) -> None:
         """Subscribe to ``channels``"""
-        self._subscribed_channels.update(channels)
-        self._has_subscribed_channels.set()
+        pass
 
     async def unsubscribe(self, channels: Iterable[str]) -> None:
         """Unsubscribe from ``channels``"""
-        self._subscribed_channels -= set(channels)
-        if not len(self._subscribed_channels):
-            self._has_subscribed_channels.clear()
+        pass
 
     async def publish(self, data: bytes, channels: Iterable[str]) -> None:
         """Publish ``data`` to ``channels``.
@@ -211,22 +182,11 @@ class RedisChannelsStreamBackend(RedisChannelsBackend):
         .. note::
             This operation is performed atomically, using a Lua script
         """
-        channels = set(channels)
-        await self._publish_script(
-            keys=[self._make_key(key) for key in channels],
-            args=[
-                data,
-                self._history_limit,
-                self._stream_ttl,
-                int(self._cap_streams_approximate),
-                *channels,
-            ],
-        )
+        pass
 
     async def _get_subscribed_channels(self) -> set[str]:
         """Get subscribed channels. If no channels are currently subscribed, wait"""
-        await self._has_subscribed_channels.wait()
-        return self._subscribed_channels
+        pass
 
     async def stream_events(self) -> AsyncGenerator[tuple[str, Any], None]:
         """Return a generator, iterating over events of subscribed channels as they become available.
@@ -234,35 +194,11 @@ class RedisChannelsStreamBackend(RedisChannelsBackend):
         If no channels have been subscribed to yet via :meth:`subscribe`, sleep for ``stream_sleep_no_subscriptions``
         milliseconds.
         """
-        stream_ids: dict[str, bytes] = {}
-        while True:
-            # We wait for subscribed channels, because we can't pass an empty dict to
-            # xread and block for subscribers
-            stream_keys = [self._make_key(c) for c in await self._get_subscribed_channels()]
-
-            data: list[tuple[bytes, list[tuple[bytes, dict[bytes, bytes]]]]] = await self._redis.xread(
-                {key: stream_ids.get(key, 0) for key in stream_keys}, block=self._stream_sleep_no_subscriptions
-            )
-
-            if not data:
-                continue
-
-            for stream_key, channel_events in data:
-                for event in channel_events:
-                    event_data = event[1][b"data"]
-                    channel_name = event[1][b"channel"].decode()
-                    stream_ids[stream_key.decode()] = event[0]
-                    yield channel_name, event_data
+        pass
 
     async def get_history(self, channel: str, limit: int | None = None) -> list[bytes]:
         """Return the history of ``channels``, returning at most ``limit`` messages"""
-        data: Iterable[tuple[bytes, dict[bytes, bytes]]]
-        if limit:
-            data = reversed(await self._redis.xrevrange(self._make_key(channel), count=limit))
-        else:
-            data = await self._redis.xrange(self._make_key(channel))
-
-        return [event[b"data"] for _, event in data]
+        pass
 
     async def flush_all(self) -> int:
         """Delete all stream keys with the ``key_prefix``.
@@ -270,5 +206,4 @@ class RedisChannelsStreamBackend(RedisChannelsBackend):
         .. important::
             This method is incompatible with redis clusters
         """
-        deleted_streams = await self._flush_all_streams_script(keys=[], args=[f"{self._key_prefix}*"])
-        return cast("int", deleted_streams)
+        pass

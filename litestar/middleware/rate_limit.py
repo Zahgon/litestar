@@ -54,7 +54,7 @@ def get_remote_address(request: Request[Any, Any, Any]) -> str:
     Returns:
         An address, uniquely identifying this client
     """
-    return request.client.host if request.client else "127.0.0.1"
+    pass
 
 
 class RateLimitMiddleware(AbstractMiddleware):
@@ -132,12 +132,7 @@ class RateLimitMiddleware(AbstractMiddleware):
             Returns:
                 None
             """
-            if message["type"] == "http.response.start":
-                message.setdefault("headers", [])
-                headers = MutableScopeHeaders(message)
-                for key, value in self.create_response_headers(cache_object=cache_object).items():
-                    headers[key] = value
-            await send(message)
+            pass
 
         return send_wrapper
 
@@ -151,16 +146,7 @@ class RateLimitMiddleware(AbstractMiddleware):
         Returns:
             An :class:`CacheObject`.
         """
-        duration = DURATION_VALUES[self.unit]
-        now = int(time())
-        cached_string = await store.get(key)
-        if cached_string:
-            cache_object = CacheObject(**decode_json(value=cached_string))
-            if cache_object.reset <= now:
-                return CacheObject(history=[], reset=now + duration)
-            return cache_object
-
-        return CacheObject(history=[], reset=now + duration)
+        pass
 
     async def set_cached_history(self, key: str, cache_object: CacheObject, store: Store) -> None:
         """Store history extended with the current timestamp in cache.
@@ -173,8 +159,7 @@ class RateLimitMiddleware(AbstractMiddleware):
         Returns:
             None
         """
-        cache_object.history = [int(time()), *cache_object.history]
-        await store.set(key, encode_json(cache_object), expires_in=DURATION_VALUES[self.unit])
+        pass
 
     async def should_check_request(self, request: Request[Any, Any, Any]) -> bool:
         """Return a boolean indicating if a request should be checked for rate limiting.
@@ -185,9 +170,7 @@ class RateLimitMiddleware(AbstractMiddleware):
         Returns:
             Boolean dictating whether the request should be checked for rate-limiting.
         """
-        if self.check_throttle_handler:
-            return await self.check_throttle_handler(request)
-        return True
+        pass
 
     def create_response_headers(self, cache_object: CacheObject) -> dict[str, str]:
         """Create ratelimit response headers.

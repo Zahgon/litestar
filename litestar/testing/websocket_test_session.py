@@ -47,16 +47,7 @@ class WebSocketTestSession:
 
     @contextlib.asynccontextmanager
     async def _run_session(self) -> AsyncGenerator[AsyncWebSocketTestSession]:
-        async with (
-            anyio.create_task_group() as tg,
-            AsyncWebSocketTestSession(
-                app=self._client.app,
-                scope=self._scope,
-                connect_timeout=self._connect_timeout,
-                tg=tg,
-            ) as session,
-        ):
-            yield session
+        pass
 
     def __enter__(self) -> WebSocketTestSession:
         with contextlib.ExitStack() as exit_stack:
@@ -78,15 +69,15 @@ class WebSocketTestSession:
 
     @property
     def accepted_subprotocol(self) -> str | None:
-        return self._async_session.accepted_subprotocol
+        pass
 
     @property
     def extra_headers(self) -> list[tuple[bytes, bytes]]:
-        return self._async_session.extra_headers
+        pass
 
     @property
     def scope(self) -> WebSocketScope:
-        return self._async_session.scope
+        pass
 
     def send(self, data: str | bytes, mode: Literal["text", "binary"] = "text", encoding: str = "utf-8") -> None:
         """Sends a "receive" event. This is the inverse of the ASGI send method.
@@ -277,13 +268,7 @@ class AsyncWebSocketTestSession:
         *,
         task_status: anyio.abc.TaskStatus,
     ) -> None:
-        app_done = anyio.Event()
-        with cancel_scope:
-            async with send_stream, receive_stream:
-                task_status.started(app_done)  # type: ignore[call-overload]
-                await self.app(self.scope, receive_stream.receive, send_stream.send)
-                app_done.set()
-                await anyio.sleep_forever()
+        pass
 
     async def _asgi_send(self, message: WebSocketReceiveMessage) -> None:
         await self._receive_stream.send(message)

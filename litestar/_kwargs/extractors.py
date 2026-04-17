@@ -307,9 +307,7 @@ async def json_extractor(connection: Request[Any, Any, Any]) -> Any:
     Returns:
         The JSON value.
     """
-    if not await connection.body():
-        return Empty
-    return await connection.json()
+    pass
 
 
 async def msgpack_extractor(connection: Request[Any, Any, Any]) -> Any:
@@ -324,9 +322,7 @@ async def msgpack_extractor(connection: Request[Any, Any, Any]) -> Any:
     Returns:
         The MessagePack value.
     """
-    if not await connection.body():
-        return Empty
-    return await connection.msgpack()
+    pass
 
 
 async def _extract_multipart(
@@ -336,58 +332,7 @@ async def _extract_multipart(
     is_data_optional: bool,
     data_dto: type[AbstractDTO] | None,
 ) -> Any:
-    multipart_form_part_limit = (
-        body_kwarg_multipart_form_part_limit
-        if body_kwarg_multipart_form_part_limit is not None
-        else connection.app.multipart_form_part_limit
-    )
-    scope_state = ScopeState.from_scope(connection.scope)
-    if scope_state.form is Empty:
-        scope_state.form = form_values = await parse_multipart_form(
-            stream=connection.stream(),
-            boundary=connection.content_type[-1].get("boundary", "").encode(),
-            multipart_form_part_limit=multipart_form_part_limit,
-            type_decoders=connection.route_handler.type_decoders,
-        )
-    else:
-        form_values = scope_state.form
-
-    if field_definition.is_non_string_sequence:
-        values = list(form_values.values())
-        if isinstance(values[0], list) and (
-            field_definition.has_inner_subclass_of(UploadFile)
-            or (field_definition.is_optional and field_definition.inner_types[0].is_non_string_sequence)
-        ):
-            return values[0]
-
-        return values
-
-    if field_definition.is_simple_type and field_definition.annotation is UploadFile and form_values:
-        return next(v for v in form_values.values() if isinstance(v, UploadFile))
-
-    if not form_values and is_data_optional:
-        return None
-
-    if data_dto:
-        return data_dto(connection).decode_builtins(form_values)
-
-    for name, tp in field_definition.get_type_hints().items():
-        value = form_values.get(name)
-        if value == "" and is_optional_union(tp):
-            inner: Any = make_non_optional_union(tp)
-            if isinstance(inner, type) and issubclass(inner, UploadFile):
-                form_values[name] = None  # pyright: ignore[reportArgumentType]
-                continue
-        if (
-            value is not None
-            and not isinstance(value, list)
-            and (
-                is_non_string_sequence(tp)
-                or (is_optional_union(tp) and is_non_string_sequence(make_non_optional_union(tp)))
-            )
-        ):
-            form_values[name] = [value]  # pyright: ignore[reportArgumentType]
-    return form_values
+    pass
 
 
 def create_multipart_extractor(
@@ -434,18 +379,7 @@ def create_url_encoded_data_extractor(
     async def extract_url_encoded_extractor(
         connection: Request[Any, Any, Any],
     ) -> Any:
-        scope_state = ScopeState.from_scope(connection.scope)
-        if scope_state.form is Empty:
-            scope_state.form = form_values = (  # type: ignore[assignment]
-                parse_url_encoded_form_data(await connection.body())
-            )
-        else:
-            form_values = scope_state.form  # type: ignore[assignment]
-
-        if not form_values and is_data_optional:
-            return None
-
-        return data_dto(connection).decode_builtins(form_values) if data_dto else form_values
+        pass
 
     return cast(
         "Callable[[ASGIConnection[Any, Any, Any, Any]], Coroutine[Any, Any, Any]]", extract_url_encoded_extractor
@@ -507,8 +441,6 @@ def create_dto_extractor(
     """
 
     async def dto_extractor(connection: Request[Any, Any, Any]) -> Any:
-        if not (body := await connection.body()):
-            return Empty
-        return data_dto(connection).decode_bytes(body)
+        pass
 
     return dto_extractor  # type:ignore[return-value]

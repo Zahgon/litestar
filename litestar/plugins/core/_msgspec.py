@@ -16,22 +16,10 @@ __all__ = ("MsgspecDIPlugin", "kwarg_definition_from_field")
 
 class MsgspecDIPlugin(DIPlugin):
     def has_typed_init(self, type_: Any) -> bool:
-        return type(type_) is type(msgspec.Struct)
+        pass
 
     def get_typed_init(self, type_: Any) -> tuple[Signature, dict[str, Any]]:
-        parameters = []
-        type_hints = {}
-        for field_info in msgspec.structs.fields(type_):
-            type_hints[field_info.name] = field_info.type
-            parameters.append(
-                inspect.Parameter(
-                    name=field_info.name,
-                    kind=inspect.Parameter.KEYWORD_ONLY,
-                    annotation=field_info.type,
-                    default=field_info.default,
-                )
-            )
-        return inspect.Signature(parameters), type_hints
+        pass
 
 
 def kwarg_definition_from_field(field: msgspec.inspect.Field) -> tuple[ParameterKwarg | None, dict[str, Any]]:

@@ -47,7 +47,7 @@ def _create_default_route_handler(
 
 
 def _create_default_app() -> Litestar:
-    return Litestar(route_handlers=[])
+    pass
 
 
 class RequestFactory:

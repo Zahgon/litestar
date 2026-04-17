@@ -14,7 +14,7 @@ __all__ = ("StoreRegistry",)
 
 
 def default_default_factory(name: str) -> Store:
-    return MemoryStore()
+    pass
 
 
 class StoreRegistry:
@@ -47,9 +47,7 @@ class StoreRegistry:
         Raises:
             ValueError: If a store is already registered under this name and ``override`` is not ``True``
         """
-        if not allow_override and name in self._stores:
-            raise ValueError(f"Store with the name {name!r} already exists")
-        self._stores[name] = store
+        pass
 
     def get(self, name: str) -> Store:
         """Get a store registered under ``name``. If no such store is registered, create a store using the default

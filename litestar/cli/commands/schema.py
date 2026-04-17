@@ -58,7 +58,7 @@ def _generate_openapi_schema(app: Litestar, output: Path) -> None:
 )
 def generate_openapi_schema(app: Litestar, output: Path) -> None:
     """Generate an OpenAPI Schema."""
-    _generate_openapi_schema(app, output)
+    pass
 
 
 @schema_group.command("typescript")  # type: ignore[untyped-decorator]
@@ -72,16 +72,4 @@ def generate_openapi_schema(app: Litestar, output: Path) -> None:
 @click.option("--namespace", help="namespace to use for the typescript specs", type=str, default="API")
 def generate_typescript_specs(app: Litestar, output: Path, namespace: str) -> None:
     """Generate TypeScript specs from the OpenAPI schema."""
-    if JSBEAUTIFIER_INSTALLED:  # pragma: no cover
-        from jsbeautifier import Beautifier
-
-        beautifier = Beautifier()
-    else:
-        beautifier = None
-    try:
-        specs = convert_openapi_to_typescript(app.openapi_schema, namespace)
-        # beautifier will be defined if JSBEAUTIFIER_INSTALLED is True
-        specs_output = beautifier.beautify(specs.write()) if JSBEAUTIFIER_INSTALLED and beautifier else specs.write()
-        output.write_text(specs_output)
-    except OSError as e:  # pragma: no cover
-        raise LitestarCLIException(f"failed to write schema to path {output}") from e
+    pass

@@ -28,7 +28,7 @@ class MultiMixin(Generic[T], MultiMapping[T], ABC):
         Returns:
             A dict of lists
         """
-        return {k: self.getall(k) for k in set(self.keys())}
+        pass
 
     def multi_items(self) -> Generator[tuple[str, T], None, None]:
         """Get all keys and values, including duplicates.
@@ -61,7 +61,7 @@ class MultiDict(BaseMultiDict[T], MultiMixin[T], Generic[T]):  # pyright: ignore
         Returns:
             An immutable multi dict
         """
-        return ImmutableMultiDict[T](self)
+        pass
 
     def copy(self) -> Self:
         """Return a shallow copy"""
@@ -86,7 +86,7 @@ class ImmutableMultiDict(MultiDictProxy[T], MultiMixin[T], Generic[T]):  # pyrig
         Returns:
             A mutable multi dict
         """
-        return MultiDict(list(self.multi_items()))
+        pass
 
     def copy(self) -> Self:  # type: ignore[override]
         """Return a shallow copy"""

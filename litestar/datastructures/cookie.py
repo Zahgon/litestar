@@ -50,20 +50,7 @@ class Cookie:
         Returns:
             A :class:`SimpleCookie <http.cookies.SimpleCookie>`
         """
-        simple_cookie: SimpleCookie = SimpleCookie()
-        simple_cookie[self.key] = self.value or ""
-
-        namespace = simple_cookie[self.key]
-        for key, value in self.dict.items():
-            if key in {"key", "value"}:
-                continue
-            if value is not None:
-                updated_key = key
-                if updated_key == "max_age":
-                    updated_key = "max-age"
-                namespace[updated_key] = value
-
-        return simple_cookie
+        pass
 
     def to_header(self, **kwargs: Any) -> str:
         """Return a string representation suitable to be sent as HTTP headers.
@@ -79,7 +66,7 @@ class Cookie:
         Returns:
             A two tuple of bytes.
         """
-        return b"set-cookie", self.to_header(header="").strip().encode("latin-1")
+        pass
 
     @property
     def dict(self) -> dict[str, Any]:
@@ -88,11 +75,7 @@ class Cookie:
         Returns:
             A dict of values
         """
-        return {
-            k: v
-            for k, v in asdict(self).items()
-            if k not in {"documentation_only", "description", "__pydantic_initialised__"}
-        }
+        pass
 
     def __hash__(self) -> int:
         return hash((self.key, self.path, self.domain))

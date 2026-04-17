@@ -59,12 +59,4 @@ class HTTPRoute(BaseRoute[HTTPScope]):
         """Parse the ``router_handlers`` of this route and return a mapping of
         http- methods and route handlers.
         """
-        handler_map = {}
-        for route_handler in route_handlers:
-            for http_method in route_handler.http_methods:
-                if http_method in handler_map:
-                    raise ImproperlyConfiguredException(
-                        f"Handler already registered for path {self.path!r} and http method {http_method}"
-                    )
-                handler_map[http_method] = route_handler
-        return handler_map
+        pass

@@ -41,7 +41,7 @@ class SimpleType(TransferType):
 
     @property
     def has_nested(self) -> bool:
-        return self.nested_field_info is not None
+        pass
 
 
 @dataclass(frozen=True)
@@ -119,26 +119,4 @@ class TransferDTOFieldDefinition(DTOFieldDefinition):
         is_partial: bool,
         is_excluded: bool,
     ) -> Self:
-        return cls(
-            annotation=field_definition.annotation,
-            args=field_definition.args,
-            default=field_definition.default,
-            default_factory=field_definition.default_factory,
-            dto_field=field_definition.dto_field,
-            extra=field_definition.extra,
-            inner_types=field_definition.inner_types,
-            instantiable_origin=field_definition.instantiable_origin,
-            is_excluded=is_excluded,
-            is_partial=is_partial,
-            kwarg_definition=field_definition.kwarg_definition,
-            metadata=field_definition.metadata,
-            name=field_definition.name,
-            origin=field_definition.origin,
-            raw=field_definition.raw,
-            safe_generic_origin=field_definition.safe_generic_origin,
-            serialization_name=serialization_name,
-            transfer_type=transfer_type,
-            type_wrappers=field_definition.type_wrappers,
-            model_name=field_definition.model_name,
-            passthrough_constraints=field_definition.passthrough_constraints,
-        )
+        pass

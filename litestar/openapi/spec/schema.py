@@ -21,23 +21,7 @@ __all__ = ("Schema", "SchemaDataContainer")
 
 
 def _recursive_hash(value: Hashable | Sequence | Mapping | DataclassProtocol | type[DataclassProtocol]) -> int:
-    if isinstance(value, Mapping):
-        hash_value = 0
-        for k, v in value.items():
-            if k != "examples":
-                hash_value += hash(k)
-                hash_value += _recursive_hash(v)
-        return hash_value
-    if is_dataclass(value):
-        hash_value = hash(type(value).__name__)
-        for field in fields(value):
-            if field.name != "examples":
-                hash_value += hash(field.name)
-                hash_value += _recursive_hash(getattr(value, field.name, None))
-        return hash_value
-    if is_non_string_sequence(value):
-        return sum(_recursive_hash(v) for v in value)
-    return hash(value) if isinstance(value, Hashable) else 0
+    pass
 
 
 @dataclass

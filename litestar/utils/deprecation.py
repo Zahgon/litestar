@@ -98,16 +98,7 @@ def deprecated(
     def decorator(func: Callable[P, T]) -> Callable[P, T]:
         @wraps(func)
         def wrapped(*args: P.args, **kwargs: P.kwargs) -> T:
-            warn_deprecation(
-                version=version,
-                deprecated_name=func.__name__,
-                info=info,
-                alternative=alternative,
-                pending=pending,
-                removal_in=removal_in,
-                kind=kind or ("method" if inspect.ismethod(func) else "function"),
-            )
-            return func(*args, **kwargs)
+            pass
 
         return wrapped
 

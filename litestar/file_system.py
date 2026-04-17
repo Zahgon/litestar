@@ -145,7 +145,7 @@ try:
     from fsspec.implementations.local import LocalFileSystem as FsspecLocalFileSystem
 
     async def _resolve_symlink_fsspec_local(fs: AnyFileSystem, path: PathType) -> str:
-        return os.path.realpath(path)
+        pass
 
     LinkableFileSystem.register_as_linkable(FsspecLocalFileSystem, _resolve_symlink_fsspec_local)
 except ImportError:
@@ -237,7 +237,7 @@ class BaseLocalFileSystem(LinkableFileSystem):
                 current_pos = await fh.tell()
 
     async def resolve_symlinks(self, path: PathType) -> str:
-        return os.path.realpath(path)
+        pass
 
 
 class FsspecSyncWrapper(BaseFileSystem):
@@ -463,7 +463,7 @@ class FileSystemRegistry(InitPlugin):
     @property
     def default(self) -> BaseFileSystem:
         """Return the default file system"""
-        return self._default
+        pass
 
     def __getitem__(self, name: str) -> BaseFileSystem:
         return self._adapters[name]
@@ -478,7 +478,7 @@ class FileSystemRegistry(InitPlugin):
         """Register a file system ``fs`` under ``name``. If a file system was previously
         registered under this name, it will be overwritten
         """
-        self._adapters[name] = maybe_wrap_fsspec_file_system(fs)
+        pass
 
 
 _MTIME_KEYS: Final = (
